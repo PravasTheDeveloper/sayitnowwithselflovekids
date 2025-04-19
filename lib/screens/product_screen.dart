@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sayitnowwithselflovekids/screens/cart_screen.dart';
 
 class ProductScreen extends StatefulWidget {
   const ProductScreen({Key? key}) : super(key: key);
@@ -34,17 +35,16 @@ class _ProductScreenState extends State<ProductScreen> {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Color(0xFFF9A826), // Amber/orange starting color
-                  Color(0xFFFF8C00), // Darker orange ending color
-                ],
+                gradient: LinearGradient(
+                  colors: [
+                    Color(0xFFF9A826), // Amber/orange starting color
+                    Color(0xFFFF8C00), // Darker orange ending color
+                  ],
                   begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,),
+                  end: Alignment.centerRight,
+                ),
                 border: Border(
-                  bottom: BorderSide(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
+                  bottom: BorderSide(color: Colors.grey.shade200, width: 1),
                 ),
               ),
               child: Row(
@@ -71,9 +71,17 @@ class _ProductScreenState extends State<ProductScreen> {
                         onPressed: _toggleSearch,
                       ),
                       IconButton(
-                        icon: const Icon(Icons.shopping_cart, color: Colors.white),
+                        icon: const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                        ),
                         onPressed: () {
-                          // Navigate to cart screen or show cart modal
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const CartScreen(),
+                            ),
+                          );
                         },
                       ),
                     ],
@@ -96,7 +104,10 @@ class _ProductScreenState extends State<ProductScreen> {
                           controller: _searchController,
                           decoration: InputDecoration(
                             hintText: 'Search for products...',
-                            prefixIcon: const Icon(Icons.search, color: Colors.grey),
+                            prefixIcon: const Icon(
+                              Icons.search,
+                              color: Colors.grey,
+                            ),
                             filled: true,
                             fillColor: Colors.grey.shade50,
                             border: OutlineInputBorder(
@@ -119,7 +130,12 @@ class _ProductScreenState extends State<ProductScreen> {
                   // All Products Section
                   SliverToBoxAdapter(
                     child: Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16, top: 24, bottom: 16),
+                      padding: const EdgeInsets.only(
+                        left: 16,
+                        right: 16,
+                        top: 24,
+                        bottom: 16,
+                      ),
                       child: const Text(
                         'All Products',
                         style: TextStyle(
@@ -135,12 +151,13 @@ class _ProductScreenState extends State<ProductScreen> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     sliver: SliverGrid(
-                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        childAspectRatio: 0.52,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                      ),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            childAspectRatio: 0.52,
+                            crossAxisSpacing: 16,
+                            mainAxisSpacing: 16,
+                          ),
                       delegate: SliverChildListDelegate([
                         ProductCard(
                           imageUrl: 'assets/images/product1.jpg',
@@ -154,22 +171,26 @@ class _ProductScreenState extends State<ProductScreen> {
                         ),
                         ProductCard(
                           imageUrl: 'assets/images/product3.png',
-                          title: 'Pre-Order – SAY IT NOW WITH SELF-LOVE KIDS LLC MOTIVATIONAL WAKE-UP MUSICAL PLUSH CLOCK (Blue)',
+                          title:
+                              'Pre-Order – SAY IT NOW WITH SELF-LOVE KIDS LLC MOTIVATIONAL WAKE-UP MUSICAL PLUSH CLOCK (Blue)',
                           price: '\$33.95',
                         ),
                         ProductCard(
                           imageUrl: 'assets/images/product4.png',
-                          title: 'Pre-Order Hunter Say It Now with Self-Love Kids Affirmation Plush Talking Doll',
+                          title:
+                              'Pre-Order Hunter Say It Now with Self-Love Kids Affirmation Plush Talking Doll',
                           price: '\$99.95',
                         ),
                         ProductCard(
                           imageUrl: 'assets/images/product5.png',
-                          title: 'Pre-Order Kylie Say It Now with Self-Love Kids Affirmation Plush Talking Doll (Purple)',
+                          title:
+                              'Pre-Order Kylie Say It Now with Self-Love Kids Affirmation Plush Talking Doll (Purple)',
                           price: '\$99.95',
                         ),
                         ProductCard(
                           imageUrl: 'assets/images/product6.png',
-                          title: 'SAY IT NOW WITH SELF LOVE KIDS LLC HOODIE (BLUE)',
+                          title:
+                              'SAY IT NOW WITH SELF LOVE KIDS LLC HOODIE (BLUE)',
                           price: '\$37.95',
                         ),
                       ]),
@@ -177,9 +198,7 @@ class _ProductScreenState extends State<ProductScreen> {
                   ),
 
                   // Bottom spacing
-                  const SliverToBoxAdapter(
-                    child: SizedBox(height: 24),
-                  ),
+                  const SliverToBoxAdapter(child: SizedBox(height: 24)),
                 ],
               ),
             ),
@@ -231,7 +250,10 @@ class ProductCard extends StatelessWidget {
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey.shade300,
-                    child: const Icon(Icons.image_not_supported, color: Colors.grey),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      color: Colors.grey,
+                    ),
                   );
                 },
               ),
@@ -268,10 +290,10 @@ class ProductCard extends StatelessWidget {
                 ],
               ),
             ),
-            
+
             // Spacer to push button to bottom
             const Spacer(),
-            
+
             // Add to Cart Button at the bottom
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -289,10 +311,7 @@ class ProductCard extends StatelessWidget {
                   ),
                   child: const Text(
                     'Add to Cart',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
