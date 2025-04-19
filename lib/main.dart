@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:sayitnowwithselflovekids/screens/cart_screen.dart';
+import 'package:sayitnowwithselflovekids/screens/track_order_screen.dart';
 import 'screens/landing_page.dart';
 import 'screens/login_page.dart';
 import 'screens/signup_page.dart';
@@ -39,6 +41,8 @@ class SelfLoveKidsApp extends StatelessWidget {
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/home': (context) => const HomePage(),
+        '/cart': (context) => const CartScreen(),
+        '/trackorder':(context) => const TrackOrderScreen(),
       },
     );
   }
