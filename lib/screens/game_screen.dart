@@ -57,19 +57,145 @@ class _GameScreenState extends State<GameScreen> {
   }
 }
 
-// Data class to hold player information
+// Data class to hold player information with money
 class PlayerData {
   final String name;
   final Color color;
   final int characterIndex;
-  final String imagePath; // Added image path
+  final String imagePath;
   
-  const PlayerData({
+  // Money properties
+  int totalMoney = 100; // Starting money
+  int ones = 5;         // $1 x 5
+  int fives = 3;        // $5 x 3
+  int tens = 1;         // $10 x 1
+  int twenties = 1;     // $20 x 1
+  int fifties = 1;      // $50 x 1
+  int hundreds = 0;     // $100 x 0
+  
+  PlayerData({
     required this.name,
     required this.color,
     required this.characterIndex,
     required this.imagePath,
   });
+  
+  // Calculate total money based on denominations
+  void recalculateTotal() {
+    totalMoney = ones * 1 + fives * 5 + tens * 10 + twenties * 20 + fifties * 50 + hundreds * 100;
+  }
+  
+  // Add money by denomination
+  void addMoney(int amount) {
+    // Add money in the most efficient way (largest denominations first)
+    while (amount >= 100 && amount > 0) {
+      hundreds++;
+      amount -= 100;
+    }
+    
+    while (amount >= 50 && amount > 0) {
+      fifties++;
+      amount -= 50;
+    }
+    
+    while (amount >= 20 && amount > 0) {
+      twenties++;
+      amount -= 20;
+    }
+    
+    while (amount >= 10 && amount > 0) {
+      tens++;
+      amount -= 10;
+    }
+    
+    while (amount >= 5 && amount > 0) {
+      fives++;
+      amount -= 5;
+    }
+    
+    while (amount >= 1 && amount > 0) {
+      ones++;
+      amount -= 1;
+    }
+    
+    recalculateTotal();
+  }
+  
+  // Subtract money
+  bool subtractMoney(int amount) {
+    if (amount > totalMoney) {
+      return false; // Not enough money
+    }
+    
+    // Make a copy of current denominations
+    int tempOnes = ones;
+    int tempFives = fives;
+    int tempTens = tens;
+    int tempTwenties = twenties;
+    int tempFifties = fifties;
+    int tempHundreds = hundreds;
+    
+    // Take money from largest denominations first
+    while (amount >= 100 && tempHundreds > 0) {
+      tempHundreds--;
+      amount -= 100;
+    }
+    
+    while (amount >= 50 && tempFifties > 0) {
+      tempFifties--;
+      amount -= 50;
+    }
+    
+    while (amount >= 20 && tempTwenties > 0) {
+      tempTwenties--;
+      amount -= 20;
+    }
+    
+    while (amount >= 10 && tempTens > 0) {
+      tempTens--;
+      amount -= 10;
+    }
+    
+    while (amount >= 5 && tempFives > 0) {
+      tempFives--;
+      amount -= 5;
+    }
+    
+    while (amount >= 1 && tempOnes > 0) {
+      tempOnes--;
+      amount -= 1;
+    }
+    
+    // If we couldn't subtract the full amount, we need to make change
+    if (amount > 0) {
+      // Try to make change
+      // This is a simplified algorithm and might not work for all cases
+      // In a real game, you'd want a more sophisticated change-making algorithm
+      
+      // For example, if we need 3 more $1 bills but only have $5 bills
+      if (amount <= 5 && tempFives > 0) {
+        tempFives--;
+        tempOnes += 5 - amount;
+        amount = 0;
+      }
+      
+      // Similar logic for other denominations...
+    }
+    
+    if (amount == 0) {
+      // Apply the changes
+      ones = tempOnes;
+      fives = tempFives;
+      tens = tempTens;
+      twenties = tempTwenties;
+      fifties = tempFifties;
+      hundreds = tempHundreds;
+      recalculateTotal();
+      return true;
+    }
+    
+    return false; // Couldn't make exact change
+  }
 }
 
 // Welcome Screen that shows for 2 seconds
@@ -170,7 +296,7 @@ class _CharacterSelectionScreenState extends State<CharacterSelectionScreen> {
     'Player 5',
     'Player 6',
     'Player 7',
-    'Player ',
+    'Player 8',
   ];
 
   // Character image paths
@@ -526,7 +652,7 @@ class _CharacterSelectionScreenState extends State<CharacterSelectionScreen> {
                                       const SizedBox(width: 8),
                                       Expanded(
                                         child: Text(
-                                          '${player.name} (${characterNames[player.characterIndex]})',
+                                          '${player.name}',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.bold,
@@ -624,7 +750,7 @@ class CirclePatternPage extends StatelessWidget {
   }
 }
 
-// Modified CirclePattern to use player data
+// Modified CirclePattern to use player data and money system
 class CirclePattern extends StatefulWidget {
   final List<PlayerData> players;
 
@@ -643,11 +769,11 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
   // Animation controller for dice rolling
   late AnimationController _animationController;
 
-  // Map of dice values for each player
-  Map<int, List<int>> playerDiceValues = {};
+  // Current dice values
+  List<int> diceValues = [1, 6];
 
-  // Current active player
-  int activePlayer = 0;
+  // Current active player index
+  int activePlayerIndex = 0;
 
   // Random for dice rolls
   final Random _random = Random();
@@ -666,13 +792,11 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
     _animationController.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _animationController.reset();
+        
+        // Move to next player after dice roll completes
+        _nextPlayerTurn();
       }
     });
-
-    // Initialize dice values for each player
-    for (int i = 0; i < widget.players.length; i++) {
-      playerDiceValues[i] = [1, 6]; // Default values
-    }
   }
 
   @override
@@ -681,19 +805,24 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
     super.dispose();
   }
 
-  // Method to roll dice for a player
-  void _rollDice(int playerIndex) {
+  // Method to roll dice
+  void _rollDice() {
     setState(() {
-      activePlayer = playerIndex;
-
       // Start the animation
       _animationController.forward();
 
       // Generate random dice values between 1 and 6
-      playerDiceValues[playerIndex] = [
+      diceValues = [
         _random.nextInt(6) + 1,
         _random.nextInt(6) + 1,
       ];
+    });
+  }
+  
+  // Method to move to next player's turn
+  void _nextPlayerTurn() {
+    setState(() {
+      activePlayerIndex = (activePlayerIndex + 1) % widget.players.length;
     });
   }
 
@@ -724,122 +853,187 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
     );
   }
 
-  // Helper method to create a player section with dice
-  Widget _buildPlayerSection(PlayerData player, int playerIndex) {
-    final diceValues = playerDiceValues[playerIndex] ?? [1, 6];
-    
-    return GestureDetector(
-      onTap: () => _rollDice(playerIndex),
-      child: Container(
-        width: 100,
-        height: 70, // Reduced height to avoid overflow
-        decoration: BoxDecoration(
-          border: Border.all(
-              color: player.color,
-              width: activePlayer == playerIndex ? 4 : 3
-          ),
-          borderRadius: BorderRadius.circular(10),
-          color: Colors.white.withOpacity(0.8),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(4), // Reduced padding
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Player character image and name in a row
-              Row(
-                children: [
-                  // Character image
-                  Container(
-                    width: 22, // Reduced size
-                    height: 22, // Reduced size
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(4),
-                      border: Border.all(
-                        color: player.color,
-                        width: 1,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(3),
-                      child: Image.asset(
-                        player.imagePath,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 4), // Reduced spacing
-                  // Player name
-                  Expanded(
-                    child: Text(
-                      player.name,
-                      style: TextStyle(
-                        color: player.color,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12, // Reduced font size
-                      ),
-                      overflow: TextOverflow.ellipsis,
-                      maxLines: 1,
-                    ),
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 4), // Reduced spacing
-
-              // Dice row
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Use AnimatedBuilder to rotate the dice
-                  AnimatedBuilder(
-                    animation: _animationController,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: activePlayer == playerIndex ? _animationController.value * 4 * pi : 0,
-                        child: _buildDice(diceValues[0], activePlayer == playerIndex),
-                      );
-                    },
-                  ),
-                  SizedBox(width: 8), // Reduced spacing
-                  AnimatedBuilder(
-                    animation: _animationController,
-                    builder: (context, child) {
-                      return Transform.rotate(
-                        angle: activePlayer == playerIndex ? _animationController.value * 4 * pi : 0,
-                        child: _buildDice(diceValues[1], activePlayer == playerIndex),
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ],
-          ),
+  // Helper method to create active player display with character and dice
+  Widget _buildActivePlayerDisplay(PlayerData player) {
+    return Container(
+      padding: EdgeInsets.all(8),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: player.color,
+          width: 3,
         ),
       ),
-    );
-  }
-
-  // Helper method to create a dice
-  Widget _buildDice(int value, bool isAnimating) {
-    return Container(
-      width: 28, // Reduced size
-      height: 28, // Reduced size
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: Colors.black, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black26,
-            blurRadius: 3,
-            offset: Offset(2, 2),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Player character image
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: player.color,
+                width: 2,
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(6),
+              child: Image.asset(
+                player.imagePath,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(width: 10),
+          // Player name
+          Text(
+            player.name,
+            style: TextStyle(
+              color: player.color,
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+            ),
           ),
         ],
       ),
-      child: Center(
-        child: _buildDiceDots(value),
+    );
+  }
+  
+  // Helper method to create a money display for a player
+  Widget _buildMoneyDisplay(PlayerData player) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Color(0xFFFFA07A), // Light salmon color
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black26,
+            blurRadius: 4,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Total money display
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Bank: \$${player.totalMoney}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                  color: Colors.black,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 8),
+          // Money denominations
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                if (player.ones > 0) _buildMoneyItem(player.ones, 1),
+                SizedBox(width: 8),
+                if (player.fives > 0) _buildMoneyItem(player.fives, 5),
+                SizedBox(width: 8),
+                if (player.tens > 0) _buildMoneyItem(player.tens, 10),
+                SizedBox(width: 8),
+                if (player.twenties > 0) _buildMoneyItem(player.twenties, 20),
+                SizedBox(width: 8),
+                if (player.fifties > 0) _buildMoneyItem(player.fifties, 50),
+                SizedBox(width: 8),
+                if (player.hundreds > 0) _buildMoneyItem(player.hundreds, 100),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  // Helper method to display money denomination with image
+  Widget _buildMoneyItem(int count, int value) {
+    return Column(
+      children: [
+        Stack(
+          alignment: Alignment.topRight,
+          children: [
+            // Money image
+            Container(
+              width: 50,
+              height: 30,
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.black26),
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Image.asset(
+                'assets/money/${value}.png',
+                fit: BoxFit.cover,
+              ),
+            ),
+            // Count badge
+            Container(
+              padding: EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: Colors.red,
+                shape: BoxShape.circle,
+              ),
+              child: Text(
+                '$count',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        Text('\$$value × $count', 
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ],
+    );
+  }
+  
+  // Helper method to create clickable dice
+  Widget _buildDice(int value, bool isAnimating) {
+    return GestureDetector(
+      onTap: () => _rollDice(),
+      child: Container(
+        width: 60, // Larger size
+        height: 60, // Larger size
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(color: Colors.black, width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              blurRadius: 4,
+              offset: Offset(2, 2),
+            ),
+          ],
+        ),
+        child: Center(
+          child: _buildDiceDots(value),
+        ),
       ),
     );
   }
@@ -849,8 +1043,8 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
     switch (value) {
       case 1:
         return Container(
-          width: 8, // Reduced size
-          height: 8, // Reduced size
+          width: 12, // Larger dot
+          height: 12, // Larger dot
           decoration: BoxDecoration(
             color: Colors.black,
             shape: BoxShape.circle,
@@ -864,7 +1058,7 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 12),
                   child: _buildDot(),
                 ),
               ],
@@ -873,7 +1067,7 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(left: 8),
+                  padding: EdgeInsets.only(left: 12),
                   child: _buildDot(),
                 ),
               ],
@@ -888,7 +1082,7 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(right: 8),
+                  padding: EdgeInsets.only(right: 12),
                   child: _buildDot(),
                 ),
               ],
@@ -903,7 +1097,7 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
                 Padding(
-                  padding: EdgeInsets.only(left: 8),
+                  padding: EdgeInsets.only(left: 12),
                   child: _buildDot(),
                 ),
               ],
@@ -991,8 +1185,8 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
   // Helper method to create a single dot
   Widget _buildDot() {
     return Container(
-      width: 4, // Reduced size
-      height: 4, // Reduced size
+      width: 8, // Larger dot
+      height: 8, // Larger dot
       decoration: BoxDecoration(
         color: Colors.black,
         shape: BoxShape.circle,
@@ -1024,11 +1218,14 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
 
   @override
   Widget build(BuildContext context) {
+    // Get active player
+    final activePlayer = widget.players[activePlayerIndex];
+    
     // For responsive sizing based on screen size
     final size = MediaQuery.of(context).size;
 
     // Calculate maximum width/height for a square board
-    final availableHeight = size.height - 140; // Reduced space for player sections
+    final availableHeight = size.height - 240; // Additional space for money display and dice
     final availableWidth = size.width - 10; // Account for horizontal padding
 
     // Use the smaller dimension to ensure board is square
@@ -1037,7 +1234,7 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
     // Calculate sizes for the grid layout
     final regularSquareSize = boardSize / 14; // Smaller size for regular squares
     final cornerSquareSize = boardSize / 8; // Larger size for corner squares
-    final circleSize = boardSize * 0.3;
+    final circleSize = boardSize * 0.2; // Smaller center image (reduced from 0.3)
     final gap = 2.0;
     final horizontalPadding = 1.0;
 
@@ -1064,43 +1261,15 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
 
     final String circleImage = 'assets/images/circle.png';
 
-    // Organize players for display
-    final int playerCount = widget.players.length;
-    
-    // Create lists to hold player references - using indices instead of null
-    List<int> topPlayerIndices = [];
-    List<int> bottomPlayerIndices = [];
-    
-    // Add top player indices (0-1)
-    for (int i = 0; i < min(2, playerCount); i++) {
-      topPlayerIndices.add(i);
-    }
-    
-    // Add bottom player indices (2-3)
-    for (int i = 2; i < min(4, playerCount); i++) {
-      bottomPlayerIndices.add(i);
-    }
-
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+      padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 10),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          // Top players row
-          Padding(
-            padding: EdgeInsets.only(bottom: 2),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                topPlayerIndices.length > 0
-                  ? _buildPlayerSection(widget.players[topPlayerIndices[0]], topPlayerIndices[0])
-                  : SizedBox(width: 100),
-                topPlayerIndices.length > 1
-                  ? _buildPlayerSection(widget.players[topPlayerIndices[1]], topPlayerIndices[1])
-                  : SizedBox(width: 100),
-              ],
-            ),
-          ),
+          // Current player display at top
+          _buildActivePlayerDisplay(activePlayer),
+          
+          SizedBox(height: 8),
 
           // Game board container - explicitly square with fixed size
           Container(
@@ -1194,6 +1363,62 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
                       Expanded(
                         child: Container(
                           color: Colors.transparent,
+                          child: Stack(
+                            children: [
+                              // Four square boxes inside the board with images
+                              Positioned(
+                                top: regularSquareSize,
+                                left: regularSquareSize * 2,
+                                child: _buildInnerSquare(
+                                  imagePath: 'assets/images/box_image1.png',
+                                ),
+                              ),
+                              Positioned(
+                                top: regularSquareSize,
+                                right: regularSquareSize * 2,
+                                child: _buildInnerSquare(
+                                  imagePath: 'assets/images/box_image2.png',
+                                ),
+                              ),
+                              Positioned(
+                                bottom: regularSquareSize,
+                                left: regularSquareSize * 2,
+                                child: _buildInnerSquare(
+                                  imagePath: 'assets/images/box_image3.png',
+                                ),
+                              ),
+                              Positioned(
+                                bottom: regularSquareSize,
+                                right: regularSquareSize * 2,
+                                child: _buildInnerSquare(
+                                  imagePath: 'assets/images/box_image4.png',
+                                ),
+                              ),
+
+                              // Center circle with image (smaller)
+                              Center(
+                                child: Container(
+                                  width: circleSize,
+                                  height: circleSize,
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    image: DecorationImage(
+                                      image: AssetImage(circleImage),
+                                      fit: BoxFit.cover,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withOpacity(0.2),
+                                        spreadRadius: 1,
+                                        blurRadius: 4,
+                                        offset: Offset(0, 2),
+                                      )
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
 
@@ -1270,106 +1495,52 @@ class _CirclePatternState extends State<CirclePattern> with SingleTickerProvider
                     ],
                   ),
                 ),
-
-                // Four square boxes inside the board with images
-                // Top-left box
-                Positioned(
-                  top: cornerSquareSize + regularSquareSize,
-                  left: regularSquareSize * 2,
-                  child: _buildInnerSquare(
-                    imagePath: 'assets/images/box_image1.png',
-                  ),
-                ),
-
-                // Top-right box
-                Positioned(
-                  top: cornerSquareSize + regularSquareSize,
-                  right: regularSquareSize * 2,
-                  child: _buildInnerSquare(
-                    imagePath: 'assets/images/box_image2.png',
-                  ),
-                ),
-
-                // Bottom-left box
-                Positioned(
-                  bottom: cornerSquareSize + regularSquareSize,
-                  left: regularSquareSize * 2,
-                  child: _buildInnerSquare(
-                    imagePath: 'assets/images/box_image3.png',
-                  ),
-                ),
-
-                // Bottom-right box
-                Positioned(
-                  bottom: cornerSquareSize + regularSquareSize,
-                  right: regularSquareSize * 2,
-                  child: _buildInnerSquare(
-                    imagePath: 'assets/images/box_image4.png',
-                  ),
-                ),
-
-                // Center circle with image
-                Positioned.fill(
-                  child: Center(
-                    child: Container(
-                      width: circleSize,
-                      height: circleSize,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                          image: AssetImage(circleImage),
-                          fit: BoxFit.cover,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.2),
-                            spreadRadius: 1,
-                            blurRadius: 4,
-                            offset: Offset(0, 2),
-                          )
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
 
-          // Bottom players row
-          Padding(
-            padding: EdgeInsets.only(top: 2),
+          SizedBox(height: 8),
+          
+          // Money display at the bottom
+          _buildMoneyDisplay(activePlayer),
+          
+          SizedBox(height: 10),
+          
+          // Clickable dice at the very bottom in a row
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 10),
+            padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(color: Colors.white, width: 2),
+            ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                bottomPlayerIndices.length > 0
-                  ? _buildPlayerSection(widget.players[bottomPlayerIndices[0]], bottomPlayerIndices[0])
-                  : SizedBox(width: 100),
-                bottomPlayerIndices.length > 1
-                  ? _buildPlayerSection(widget.players[bottomPlayerIndices[1]], bottomPlayerIndices[1])
-                  : SizedBox(width: 100),
-              ],
-            ),
-          ),
-
-          // Extra players if more than 4 players
-          if (playerCount > 4)
-            Padding(
-              padding: EdgeInsets.only(top: 8), // Reduced spacing
-              child: Container(
-                height: 70, // Reduced height
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: playerCount - 4,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 4), // Reduced spacing
-                      child: _buildPlayerSection(widget.players[index + 4], index + 4),
+                // Animated dice display - now clickable
+                AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _animationController.value * 4 * pi,
+                      child: _buildDice(diceValues[0], true),
                     );
                   },
                 ),
-              ),
+                SizedBox(width: 20),
+                AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _animationController.value * 4 * pi,
+                      child: _buildDice(diceValues[1], true),
+                    );
+                  },
+                ),
+              ],
             ),
+          ),
         ],
       ),
     );
