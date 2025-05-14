@@ -208,6 +208,101 @@ class PlayerData {
   }
 }
 
+// Add this code right after your imports
+
+// Define reward types
+enum ChoreRewardType {
+  collectFromBank, // Collect money from the bank
+  collectFromPlayers, // Collect money from all players
+  collectFromParents, // Collect money from parents
+  collectFromPlayerAhead, // Collect from players ahead of you
+}
+
+// Chore card model
+class ChoreCard {
+  final String title = "CHORES";
+  final String instruction;
+  final String firstImagePath; // First image (cleaning supplies)
+  final ChoreRewardType rewardType;
+  final int rewardAmount;
+  final String targetType;
+
+  ChoreCard({
+    required this.instruction,
+    required this.firstImagePath,
+    required this.rewardType,
+    required this.rewardAmount,
+    required this.targetType,
+  });
+}
+
+// Create map of positions to chore cards
+Map<int, ChoreCard> choreCards = {
+  2: ChoreCard(
+    instruction: "Do the laundry and earn \$7 from each player ahead of you.",
+    firstImagePath: "assets/rewards/chores_02.png",
+    rewardType: ChoreRewardType.collectFromPlayerAhead,
+    rewardAmount: 7,
+    targetType: "each player ahead of you",
+  ),
+
+  6: ChoreCard(
+    instruction: "Take the trash out home and earn \$3 from each player.",
+    firstImagePath: "assets/rewards/chores_03.png",
+    rewardType: ChoreRewardType.collectFromPlayers,
+    rewardAmount: 3,
+    targetType: "each player",
+  ),
+
+  12: ChoreCard(
+    instruction: "Mop and sweep the floor and earn \$12 from the bank.",
+    firstImagePath: "assets/rewards/chores_04.png",
+    rewardType: ChoreRewardType.collectFromBank,
+    rewardAmount: 12,
+    targetType: "the bank",
+  ),
+
+  16: ChoreCard(
+    instruction: "You washed the car, you earn \$10 from each player.",
+    firstImagePath: "assets/rewards/chores_05.png",
+    rewardType: ChoreRewardType.collectFromPlayers,
+    rewardAmount: 10,
+    targetType: "each player",
+  ),
+
+  22: ChoreCard(
+    instruction: "Clean your refrigerator and earn \$5 from the bank.",
+    firstImagePath: "assets/rewards/chores_06.png",
+    rewardType: ChoreRewardType.collectFromBank,
+    rewardAmount: 5,
+    targetType: "the bank",
+  ),
+
+  26: ChoreCard(
+    instruction: "Vacuum your bedroom and earn \$1 from each parent.",
+    firstImagePath: "assets/rewards/chores_07.png",
+    rewardType: ChoreRewardType.collectFromParents,
+    rewardAmount: 1,
+    targetType: "each parent",
+  ),
+
+  32: ChoreCard(
+    instruction: "Clean bathroom and earn \$4 from the bank.",
+    firstImagePath: "assets/rewards/chores_08.png",
+    rewardType: ChoreRewardType.collectFromBank,
+    rewardAmount: 4,
+    targetType: "the bank",
+  ),
+
+  36: ChoreCard(
+    instruction: "Clean kitchen and earn \$2 from parents.",
+    firstImagePath: "assets/rewards/chores_09.png",
+    rewardType: ChoreRewardType.collectFromParents,
+    rewardAmount: 2,
+    targetType: "parents",
+  ),
+};
+
 // Welcome Screen that shows for 2 seconds
 class WelcomeScreen extends StatelessWidget {
   @override
@@ -791,7 +886,7 @@ class CirclePattern extends StatefulWidget {
 }
 
 class _CirclePatternState extends State<CirclePattern>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   final Color darkNavyColor = const Color(0xFF0E1625);
 
   // Animation controller for dice rolling
@@ -814,11 +909,21 @@ class _CirclePatternState extends State<CirclePattern>
   String? actionMessage;
   Timer? messageTimer;
 
+  // For animated movement
+  bool isAnimatingMovement = false;
+  int currentAnimationPosition = 0;
+  int targetPosition = 0;
+  Timer? animationTimer;
+
+  // For smooth square scaling animations
+  Map<int, AnimationController> squareAnimationControllers = {};
+  Map<int, Animation<double>> squareScaleAnimations = {};
+
   @override
   void initState() {
     super.initState();
 
-    // Initialize animation controller
+    // Initialize animation controller for dice
     _animationController = AnimationController(
       vsync: this,
       duration: Duration(milliseconds: 500),
@@ -854,11 +959,21 @@ class _CirclePatternState extends State<CirclePattern>
   void dispose() {
     _animationController.dispose();
     messageTimer?.cancel();
+    animationTimer?.cancel();
+
+    // Dispose all square animation controllers
+    squareAnimationControllers.forEach((_, controller) {
+      controller.dispose();
+    });
+
     super.dispose();
   }
 
   // Updated dice roll method
   void _rollDice() {
+    // Don't allow rolling if animation is in progress
+    if (isAnimatingMovement) return;
+
     setState(() {
       // Start the animation
       _animationController.forward();
@@ -870,46 +985,110 @@ class _CirclePatternState extends State<CirclePattern>
     });
   }
 
-  // void _movePlayer() {
-  //   // Get the current active player
-  //   PlayerData activePlayer = widget.players[activePlayerIndex];
+  // Create a method to handle the square animation
+  void _animateSquare(int position, bool scaleUp) {
+    // Create animation controller for this position if it doesn't exist
+    if (!squareAnimationControllers.containsKey(position)) {
+      squareAnimationControllers[position] = AnimationController(
+        vsync: this,
+        duration: Duration(
+          milliseconds: 250,
+        ), // Faster for smoother transitions
+      );
 
-  //   // For testing purposes, we move the player by 1 step (incrementing the position)
-  //   int diceTotal =
-  //       1; // For testing, we are incrementing by 1 position at a time
+      // Create animation with curve for smoother scaling
+      squareScaleAnimations[position] = Tween<double>(
+        begin: 1.0,
+        end: 1.5,
+      ).animate(
+        CurvedAnimation(
+          parent: squareAnimationControllers[position]!,
+          curve: Curves.easeOutBack, // Bounce slightly for nicer effect
+        ),
+      );
 
-  //   // Remove player from current position
-  //   if (boardPositions.containsKey(activePlayer.position)) {
-  //     boardPositions[activePlayer.position]?.remove(activePlayer);
+      // Add listener to update UI when animation changes
+      squareAnimationControllers[position]!.addListener(() {
+        setState(() {
+          // The animation value will be automatically used in build
+        });
+      });
+    }
 
-  //     // If list is empty, remove the key
-  //     if (boardPositions[activePlayer.position]?.isEmpty ?? true) {
-  //       boardPositions.remove(activePlayer.position);
-  //     }
-  //   }
+    // Animate to the target state
+    if (scaleUp) {
+      squareAnimationControllers[position]!.forward();
+    } else {
+      squareAnimationControllers[position]!.reverse();
+    }
+  }
 
-  //   // Increment the position by 1 for testing
-  //   int newPosition = (activePlayer.position + diceTotal) % totalBoardSquares;
-  //   activePlayer.position = newPosition;
-
-  //   // Add player to new position
-  //   if (!boardPositions.containsKey(newPosition)) {
-  //     boardPositions[newPosition] = [];
-  //   }
-  //   boardPositions[newPosition]?.add(activePlayer);
-
-  //   // Handle special actions based on landing square (you can customize this)
-  //   _handleLandingAction(newPosition);
-
-  //   setState(() {});
-  // }
-
+  // Enhanced move player method with animation
   void _movePlayer() {
+    if (isAnimatingMovement) return;
+
+    // Get the current active player
     PlayerData activePlayer = widget.players[activePlayerIndex];
 
+    // Calculate dice total
     int diceTotal = diceValues[0] + diceValues[1];
 
-    // Remove player from current position
+    // Show action message about the roll
+    // _showActionMessage("${activePlayer.name} rolled ${diceTotal}!");
+
+    // Store starting position for step counting
+    int startPosition = activePlayer.position;
+
+    // Calculate target position
+    targetPosition = (startPosition + diceTotal) % totalBoardSquares;
+
+    // Initialize animation position to start position
+    currentAnimationPosition = startPosition;
+
+    // Start animation
+    isAnimatingMovement = true;
+
+    // Animate the current square up
+    _animateSquare(currentAnimationPosition, true);
+
+    // Start the animation process
+    _animateNextStep(0, diceTotal);
+  }
+
+  void _animateNextStep(int stepsTaken, int totalSteps) {
+    // Cancel any existing timer
+    animationTimer?.cancel();
+
+    animationTimer = Timer(Duration(milliseconds: 300), () {
+      // Animate previous square down
+      _animateSquare(currentAnimationPosition, false);
+
+      // Check if we've taken all steps needed
+      if (stepsTaken >= totalSteps) {
+        // We've reached the destination, end animation
+        _finalizeMovement();
+        return;
+      }
+
+      // Move to next position
+      currentAnimationPosition =
+          (currentAnimationPosition + 1) % totalBoardSquares;
+
+      // Update player position in the map
+      _updatePlayerPositionInMap();
+
+      // Animate new square up
+      _animateSquare(currentAnimationPosition, true);
+
+      // Continue animation for next step with incremented steps count
+      _animateNextStep(stepsTaken + 1, totalSteps);
+    });
+  }
+
+  void _updatePlayerPositionInMap() {
+    PlayerData activePlayer = widget.players[activePlayerIndex];
+
+    // Remove player from previous position
     if (boardPositions.containsKey(activePlayer.position)) {
       boardPositions[activePlayer.position]?.remove(activePlayer);
 
@@ -919,67 +1098,122 @@ class _CirclePatternState extends State<CirclePattern>
       }
     }
 
-    // Calculate new position and wrap around the board
-    int newPosition = (activePlayer.position + diceTotal) % totalBoardSquares;
-    activePlayer.position = newPosition;
+    // Update player position
+    activePlayer.position = currentAnimationPosition;
 
     // Add player to new position
-    if (!boardPositions.containsKey(newPosition)) {
-      boardPositions[newPosition] = [];
+    if (!boardPositions.containsKey(currentAnimationPosition)) {
+      boardPositions[currentAnimationPosition] = [];
     }
-    boardPositions[newPosition]?.add(activePlayer);
+    boardPositions[currentAnimationPosition]?.add(activePlayer);
+  }
 
-    // Handle special actions based on landing square
-    _handleLandingAction(newPosition);
+  void _finalizeMovement() {
+    // Handle any special actions at the final position
+    _handleLandingAction(targetPosition);
 
+    // Reset animation state
+    isAnimatingMovement = false;
+
+    // Update UI
     setState(() {});
   }
 
   void _handleLandingAction(int position) {
     PlayerData activePlayer = widget.players[activePlayerIndex];
-    String message = '';
 
-    // Just show a message based on where the player landed
-    message = "${activePlayer.name} landed on square ${position}!";
+    // Check if the position has a chore card
+    if (choreCards.containsKey(position)) {
+      // Get the chore card for this position
+      ChoreCard choreCard = choreCards[position]!;
 
-    // Special case for jail square
-    if (position == 20) {
-      // Go to jail - move player to position 10
-      _movePlayerToPosition(activePlayer, 10);
-      message = "${activePlayer.name} is sent to Jail!";
-    }
-
-    if (position == 2) {
-      // Show the popup when the player lands on position 2
+      // Show the chore card popup
       showDialog(
         context: context,
+        barrierDismissible: false, // Prevent closing by tapping outside
         builder: (BuildContext context) {
-          return GamePopup(
-            firstImagePath:
-                'assets/rewards/chores_01.png', // Replace with your first image path
-            secondImagePath:
-                'assets/rewards/chores_02.png', // Replace with your second image path
+          return ChoreGamePopup(
+            choreCard: choreCard,
+            onChoreComplete: (ChoreCard card) {
+              // Apply the chore reward effect
+              _applyChoreReward(activePlayer, card);
+            },
             onClose: () {
               Navigator.of(context).pop(); // Close the dialog
-              _movePlayerToPosition(
-                activePlayer,
-                10,
-              ); // Optional: Move player to jail
-              message =
-                  "${activePlayer.name} fuck you!"; // Optional: Update message for jail
             },
           );
         },
       );
     }
-
-    // Show the message for a few seconds
-    if (message.isNotEmpty) {
-      _showActionMessage(message);
+    // Special case for jail square
+    else if (position == 20) {
+      // Go to jail - move player to position 10
+      _movePlayerToPosition(activePlayer, 10);
     }
 
     // Update the UI
     setState(() {});
+  }
+
+  // Add this method to apply chore rewards
+  void _applyChoreReward(PlayerData activePlayer, ChoreCard choreCard) {
+    int totalCollected = 0;
+
+    switch (choreCard.rewardType) {
+      case ChoreRewardType.collectFromBank:
+        // Player earns money from the bank
+        activePlayer.addMoney(choreCard.rewardAmount);
+        totalCollected = choreCard.rewardAmount;
+        break;
+
+      case ChoreRewardType.collectFromPlayers:
+        // Collect from all other players
+        for (var player in widget.players) {
+          if (player != activePlayer) {
+            if (player.subtractMoney(choreCard.rewardAmount)) {
+              activePlayer.addMoney(choreCard.rewardAmount);
+              totalCollected += choreCard.rewardAmount;
+            }
+          }
+        }
+        break;
+
+      case ChoreRewardType.collectFromPlayerAhead:
+        // Collect from players ahead of the active player
+        for (var player in widget.players) {
+          if (player != activePlayer && _isPlayerAhead(activePlayer, player)) {
+            if (player.subtractMoney(choreCard.rewardAmount)) {
+              activePlayer.addMoney(choreCard.rewardAmount);
+              totalCollected += choreCard.rewardAmount;
+            }
+          }
+        }
+        break;
+
+      case ChoreRewardType.collectFromParents:
+        // Simplified: Just add money as if from parents
+        activePlayer.addMoney(choreCard.rewardAmount * 2); // Assuming 2 parents
+        totalCollected = choreCard.rewardAmount * 2;
+        break;
+    }
+
+    // Update UI to reflect money changes
+    setState(() {});
+  }
+
+  // Helper method to check if one player is ahead of another on the board
+  bool _isPlayerAhead(PlayerData referencePlayer, PlayerData otherPlayer) {
+    // For a circular board we need to handle the wrap-around case
+    if (otherPlayer.position > referencePlayer.position) {
+      // Simple case: other player is at a higher position number
+      return true;
+    } else if (referencePlayer.position >
+            totalBoardSquares - totalBoardSquares / 4 &&
+        otherPlayer.position < totalBoardSquares / 4) {
+      // Handle wrap-around: reference player near the end, other player near the start
+      return true;
+    }
+    return false;
   }
 
   // Helper method to show an action message
@@ -1045,6 +1279,9 @@ class _CirclePatternState extends State<CirclePattern>
 
   // Updated method to move to next player's turn
   void _nextPlayerTurn() {
+    // Don't allow changing players if animation is in progress
+    if (isAnimatingMovement) return;
+
     setState(() {
       activePlayerIndex = (activePlayerIndex + 1) % widget.players.length;
     });
@@ -1060,143 +1297,193 @@ class _CirclePatternState extends State<CirclePattern>
     );
   }
 
-  // Method to calculate player token positions on the board
+  // Updated method to calculate player token positions with larger tokens
   Widget _positionPlayersOnBoard(int position, List<PlayerData> players) {
-  // Get available board size
-  final size = MediaQuery.of(context).size;
-  final availableHeight = size.height - 240;
-  final availableWidth = size.width - 10;
-  final boardSize = availableWidth < availableHeight ? availableWidth : availableHeight;
+    // Get available board size
+    final size = MediaQuery.of(context).size;
+    final availableHeight = size.height - 240;
+    final availableWidth = size.width - 10;
+    final boardSize =
+        availableWidth < availableHeight ? availableWidth : availableHeight;
 
-  // Sizes for reference
-  final regularSquareSize = boardSize / 14;
-  final cornerSquareSize = boardSize / 8;
+    // Sizes for reference
+    final regularSquareSize = boardSize / 14;
+    final cornerSquareSize = boardSize / 8;
 
-  // Calculate x and y coordinates based on position
-  double x = 0;
-  double y = 0;
+    // Calculate x and y coordinates based on position
+    double x = 0;
+    double y = 0;
 
-  if (position == 0) {
-    // Bottom right corner
-    x = boardSize - cornerSquareSize / 2;
-    y = boardSize - cornerSquareSize / 2;
-  } else if (position < 10) {
-    // Bottom row (moving left)
-    int offset = position;
-    double squareWidth = (boardSize - 2 * cornerSquareSize) / 9;
-    
-    // Center the player in each square
-    x = boardSize - cornerSquareSize - (offset * squareWidth) - squareWidth / 2;
-    y = boardSize - regularSquareSize / 2;
-  } else if (position == 10) {
-    // Bottom left corner
-    x = cornerSquareSize / 2;
-    y = boardSize - cornerSquareSize / 2;
-  } else if (position < 20) {
-    // Left column (moving up)
-    int offset = position - 10;
-    double squareHeight = (boardSize - 2 * cornerSquareSize) / 9;
-    
-    // Center the player in each square
-    x = regularSquareSize / 2;
-    y = boardSize - cornerSquareSize - (offset * squareHeight) - squareHeight / 2;
-  } else if (position == 20) {
-    // Top left corner
-    x = cornerSquareSize / 2;
-    y = cornerSquareSize / 2;
-  } else if (position < 30) {
-    // Top row (moving right)
-    int offset = position - 20;
-    double squareWidth = (boardSize - 2 * cornerSquareSize) / 9;
-    
-    // Center the player in each square
-    x = cornerSquareSize + (offset * squareWidth) + squareWidth / 2;
-    y = regularSquareSize / 2;
-  } else if (position == 30) {
-    // Top right corner
-    x = boardSize - cornerSquareSize / 2;
-    y = cornerSquareSize / 2;
-  } else {
-    // Right column (moving down)
-    int offset = position - 30;
-    double squareHeight = (boardSize - 2 * cornerSquareSize) / 9;
-    
-    // Center the player in each square
-    x = boardSize - regularSquareSize / 2;
-    y = cornerSquareSize + (offset * squareHeight) + squareHeight / 2;
+    if (position == 0) {
+      // Bottom right corner
+      x = boardSize - cornerSquareSize / 2;
+      y = boardSize - cornerSquareSize / 2;
+    } else if (position < 10) {
+      // Bottom row (moving left)
+      int offset = position;
+      double squareWidth = (boardSize - 2 * cornerSquareSize) / 9;
+
+      // Center the player in each square
+      x =
+          boardSize -
+          cornerSquareSize -
+          (offset * squareWidth) -
+          squareWidth / 2;
+      y = boardSize - regularSquareSize / 2;
+    } else if (position == 10) {
+      // Bottom left corner
+      x = cornerSquareSize / 2;
+      y = boardSize - cornerSquareSize / 2;
+    } else if (position < 20) {
+      // Left column (moving up)
+      int offset = position - 10;
+      double squareHeight = (boardSize - 2 * cornerSquareSize) / 9;
+
+      // Center the player in each square
+      x = regularSquareSize / 2;
+      y =
+          boardSize -
+          cornerSquareSize -
+          (offset * squareHeight) -
+          squareHeight / 2;
+    } else if (position == 20) {
+      // Top left corner
+      x = cornerSquareSize / 2;
+      y = cornerSquareSize / 2;
+    } else if (position < 30) {
+      // Top row (moving right)
+      int offset = position - 20;
+      double squareWidth = (boardSize - 2 * cornerSquareSize) / 9;
+
+      // Center the player in each square
+      x = cornerSquareSize + (offset * squareWidth) + squareWidth / 2;
+      y = regularSquareSize / 2;
+    } else if (position == 30) {
+      // Top right corner
+      x = boardSize - cornerSquareSize / 2;
+      y = cornerSquareSize / 2;
+    } else {
+      // Right column (moving down)
+      int offset = position - 30;
+      double squareHeight = (boardSize - 2 * cornerSquareSize) / 9;
+
+      // Center the player in each square
+      x = boardSize - regularSquareSize / 2;
+      y = cornerSquareSize + (offset * squareHeight) + squareHeight / 2;
+    }
+
+    // INCREASED TOKEN SIZE (by 10px)
+    final tokenSize = 30.0; // Was 20
+    final innerImageSize = 22.0; // Was 14
+
+    // Calculate player token layout based on number of players
+    // Center the row of player tokens
+    double rowWidth = players.length * (tokenSize + 4); // Each token + margin
+    double startX = x - rowWidth / 2;
+
+    // Render player tokens at the position
+    return Positioned(
+      left: startX,
+      top: y - tokenSize / 2,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children:
+            players.map((player) {
+              return Container(
+                margin: EdgeInsets.symmetric(horizontal: 2),
+                width: tokenSize,
+                height: tokenSize,
+                decoration: BoxDecoration(
+                  color: player.color,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: Colors.white, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 2,
+                      offset: Offset(1, 1),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Container(
+                    width: innerImageSize,
+                    height: innerImageSize,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      image: DecorationImage(
+                        image: AssetImage(player.imagePath),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+      ),
+    );
   }
 
-  // Calculate player token layout based on number of players
-  // Center the row of player tokens
-  double rowWidth = players.length * 24; // Each token is 20px wide with 2px margin on each side
-  double startX = x - rowWidth / 2;
-
-  // Render player tokens at the position
-  return Positioned(
-    left: startX,
-    top: y - 10, // Keep the vertical offset to display above square center
-    child: Row(
-      mainAxisSize: MainAxisSize.min,
-      children: players.map((player) {
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: 2),
-          width: 20,
-          height: 20,
-          decoration: BoxDecoration(
-            color: player.color,
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 2),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 2,
-                offset: Offset(1, 1),
-              ),
-            ],
-          ),
-          child: Center(
-            child: Container(
-              width: 14,
-              height: 14,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                image: DecorationImage(
-                  image: AssetImage(player.imagePath),
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-          ),
-        );
-      }).toList(),
-    ),
-  );
-}
-
-  // Helper method to create a border square with an image
+  // Updated helper method to create a border square with an image and smooth scaling effect
   Widget _buildBorderSquare(
     String imagePath,
     double size, [
     bool isCorner = false,
+    int? position,
   ]) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        border: Border.all(color: Colors.cyan, width: 1.5),
-        borderRadius: BorderRadius.circular(4),
-        image: DecorationImage(image: AssetImage(imagePath), fit: BoxFit.cover),
-        boxShadow:
-            isCorner
-                ? [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.2),
-                    spreadRadius: 1,
-                    blurRadius: 2,
-                    offset: Offset(0, 1),
-                  ),
-                ]
-                : null,
+    // Get scale factor from animation if available
+    double scale = 1.0;
+
+    if (position != null && squareScaleAnimations.containsKey(position)) {
+      scale = squareScaleAnimations[position]!.value;
+    }
+
+    // Calculate highlight based on animation value
+    bool isHighlighted =
+        position != null &&
+        squareScaleAnimations.containsKey(position) &&
+        squareScaleAnimations[position]!.value > 1.1;
+
+    return Transform.scale(
+      scale: scale,
+      alignment: Alignment.center,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(
+          border: Border.all(
+            color:
+                isHighlighted
+                    ? Colors
+                        .yellow // Highlight scaled squares
+                    : Colors.cyan,
+            width:
+                isHighlighted
+                    ? 2.5 // Thicker border for highlight
+                    : 1.5, // Normal border
+          ),
+          borderRadius: BorderRadius.circular(4),
+          image: DecorationImage(
+            image: AssetImage(imagePath),
+            fit: BoxFit.cover,
+          ),
+          boxShadow:
+              isCorner || isHighlighted
+                  ? [
+                    BoxShadow(
+                      color:
+                          isHighlighted
+                              ? Colors.yellow.withOpacity(
+                                0.6,
+                              ) // Glow effect for highlighted squares
+                              : Colors.black.withOpacity(0.2),
+                      spreadRadius: isHighlighted ? 2 : 1,
+                      blurRadius: isHighlighted ? 6 : 2,
+                      offset: Offset(0, 1),
+                    ),
+                  ]
+                  : null,
+        ),
       ),
     );
   }
@@ -1599,6 +1886,7 @@ class _CirclePatternState extends State<CirclePattern>
                         cornerImages[0],
                         cornerSquareSize,
                         true,
+                        20, // Position 20
                       ),
                       SizedBox(width: gap),
 
@@ -1614,16 +1902,11 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   right: index < 8 ? gap : 0,
                                 ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.cyan,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  image: DecorationImage(
-                                    image: AssetImage(topRowImages[index]),
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: _buildBorderSquare(
+                                  topRowImages[index],
+                                  regularSquareSize,
+                                  false,
+                                  21 + index, // Positions 21-29
                                 ),
                               ),
                             ),
@@ -1637,6 +1920,7 @@ class _CirclePatternState extends State<CirclePattern>
                         cornerImages[1],
                         cornerSquareSize,
                         true,
+                        30, // Position 30
                       ),
                     ],
                   ),
@@ -1662,16 +1946,11 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   bottom: index < 8 ? gap : 0,
                                 ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.cyan,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  image: DecorationImage(
-                                    image: AssetImage(leftColImages[index]),
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: _buildBorderSquare(
+                                  leftColImages[index],
+                                  regularSquareSize,
+                                  false,
+                                  19 - index, // Positions 19-11 (in reverse)
                                 ),
                               ),
                             ),
@@ -1753,16 +2032,11 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   bottom: index < 8 ? gap : 0,
                                 ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.cyan,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  image: DecorationImage(
-                                    image: AssetImage(rightColImages[index]),
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: _buildBorderSquare(
+                                  rightColImages[index],
+                                  regularSquareSize,
+                                  false,
+                                  31 + index, // Positions 31-39
                                 ),
                               ),
                             ),
@@ -1787,6 +2061,7 @@ class _CirclePatternState extends State<CirclePattern>
                         cornerImages[2],
                         cornerSquareSize,
                         true,
+                        10, // Position 10
                       ),
                       SizedBox(width: gap),
 
@@ -1802,16 +2077,11 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   right: index < 8 ? gap : 0,
                                 ),
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: Colors.cyan,
-                                    width: 1.5,
-                                  ),
-                                  borderRadius: BorderRadius.circular(4),
-                                  image: DecorationImage(
-                                    image: AssetImage(bottomRowImages[index]),
-                                    fit: BoxFit.cover,
-                                  ),
+                                child: _buildBorderSquare(
+                                  bottomRowImages[index],
+                                  regularSquareSize,
+                                  false,
+                                  9 - index, // Positions 9-1 (in reverse)
                                 ),
                               ),
                             ),
@@ -1825,6 +2095,7 @@ class _CirclePatternState extends State<CirclePattern>
                         cornerImages[3],
                         cornerSquareSize,
                         true,
+                        0, // Position 0
                       ),
                     ],
                   ),
@@ -1899,7 +2170,9 @@ class _CirclePatternState extends State<CirclePattern>
                       SizedBox(height: 10),
                       // Tap hint
                       Text(
-                        "Tap dice to roll",
+                        isAnimatingMovement
+                            ? "Animation in progress..."
+                            : "Tap dice to roll",
                         style: TextStyle(
                           fontSize: 12,
                           color: Colors.black54,
@@ -1915,9 +2188,11 @@ class _CirclePatternState extends State<CirclePattern>
               Container(
                 margin: EdgeInsets.only(right: 10),
                 child: ElevatedButton(
-                  onPressed: () => _nextPlayerTurn(),
+                  onPressed:
+                      isAnimatingMovement ? null : () => _nextPlayerTurn(),
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
+                    backgroundColor:
+                        isAnimatingMovement ? Colors.grey : Colors.green,
                     padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -2034,6 +2309,197 @@ class _GamePopupState extends State<GamePopup> {
               right: 10,
               child: IconButton(
                 icon: Icon(Icons.close, color: Colors.white, size: 30),
+                onPressed: widget.onClose,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class ChoreGamePopup extends StatefulWidget {
+  final ChoreCard choreCard;
+  final Function(ChoreCard) onChoreComplete;
+  final VoidCallback onClose;
+
+  const ChoreGamePopup({
+    Key? key,
+    required this.choreCard,
+    required this.onChoreComplete,
+    required this.onClose,
+  }) : super(key: key);
+
+  @override
+  _ChoreGamePopupState createState() => _ChoreGamePopupState();
+}
+
+class _ChoreGamePopupState extends State<ChoreGamePopup>
+    with SingleTickerProviderStateMixin {
+  double opacity1 = 0.0;
+  double opacity2 = 0.0;
+  bool showChoreDetails = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Show the first image (cleaning supplies)
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        opacity1 = 1.0;
+      });
+    });
+
+    // Show the second image (full chore card with instruction) after a delay
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        opacity1 = 0.0; // Fade out first image
+        showChoreDetails = true; // Switch to showing chore details
+      });
+
+      // After transition, fade in chore details
+      Future.delayed(Duration(milliseconds: 300), () {
+        setState(() {
+          opacity2 = 1.0;
+        });
+      });
+
+      // Auto apply chore effect after showing the details
+      Future.delayed(Duration(seconds: 3), () {
+        widget.onChoreComplete(widget.choreCard);
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height * 0.5,
+        decoration: BoxDecoration(
+          color: Color(0xFFFF7F24), // Orange background
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black, width: 3),
+        ),
+        child: Stack(
+          children: [
+            // First animation: Cleaning supplies image
+            if (!showChoreDetails)
+              AnimatedOpacity(
+                opacity: opacity1,
+                duration: Duration(milliseconds: 500),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Title
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 40.0),
+                        child: Text(
+                          "CHORES",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+
+                      // Chore image
+                      Container(
+                        width: 150,
+                        height: 150,
+                        child: Image.asset(
+                          widget.choreCard.firstImagePath,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Second animation: Chore card with instruction
+            if (showChoreDetails)
+              AnimatedOpacity(
+                opacity: opacity2,
+                duration: Duration(milliseconds: 500),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Title
+                        Text(
+                          "CHORES",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            letterSpacing: 2,
+                          ),
+                        ),
+
+                        SizedBox(height: 40),
+
+                        // Instruction
+                        Text(
+                          widget.choreCard.instruction,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+
+                        SizedBox(height: 30),
+
+                        // Chore Image
+                        Container(
+                          width: 120,
+                          height: 120,
+                          child: Image.asset(
+                            widget.choreCard.firstImagePath,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Footer
+            Positioned(
+              bottom: 15,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  "SAY IT NOW SELF-LOVE KIDS LLC GAME",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+
+            // Close button
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.black, size: 30),
                 onPressed: widget.onClose,
               ),
             ),
