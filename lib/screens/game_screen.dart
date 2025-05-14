@@ -303,6 +303,701 @@ Map<int, ChoreCard> choreCards = {
   ),
 };
 
+enum QuestionCategory { history, science, math, english, spelling }
+
+// Education Review question model
+class EducationQuestion {
+  final String question;
+  final List<String> options;
+  final int correctAnswerIndex; // Index of the correct answer in options list
+  final QuestionCategory category;
+  final String imagePath; // Path to the image file (edu_01.png, etc.)
+
+  EducationQuestion({
+    required this.question,
+    required this.options,
+    required this.correctAnswerIndex,
+    required this.category,
+    required this.imagePath,
+  });
+}
+
+class EducationQuestionBank {
+  // Random generator for questions
+  static final Random _random = Random();
+
+  // List of all history questions
+  static final List<EducationQuestion> historyQuestions = [
+    EducationQuestion(
+      question:
+          'What producer, director, screenplay writer and actor established their own production company on the former Army Military base, Fort McPherson in Atlanta, Georgia?',
+      options: [
+        'Ava Duvernay',
+        'John Singleton',
+        'Antoine Fuqua',
+        'Tyler Perry',
+        'Will Packer',
+      ],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_02.png',
+    ),
+    EducationQuestion(
+      question:
+          'Name the female rapper, singer and actress who played in movies as an physical therapist and cab driver',
+      options: [
+        'Dana Owens',
+        'Cardi B',
+        'Gloria "Glorilla" Woods',
+        'Megan The Stallion',
+        'Nicki Minaj',
+      ],
+      correctAnswerIndex: 0, // Dana Owens (Queen Latifah)
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_03.png',
+    ),
+    EducationQuestion(
+      question:
+          'What is the name of the country/pop singer who was a member of a female group who later became an actress in Dreamgirls and Obsessed movie?',
+      options: [
+        'Aretha Franklin',
+        'Kelly Rowland',
+        'Dolly Parton',
+        'Beyonce Knowles-Carter',
+      ],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_04.png',
+    ),
+    EducationQuestion(
+      question:
+          'Name three NBA players who played on the Los Angeles Lakers team and won championships.',
+      options: [
+        'Shaquille "Shaq" O\'Neal, Kobe Bryant and Larry Bird',
+        'LeBron James, Kobe Bryant and Michael Jordan',
+        'Scottie Pippen Sr., Earvin "Magic" Johnson Jr., and Kobe Bryant',
+        'Kobe Bryant, Shaquille "Shaq" O\'Neal and LeBron James',
+      ],
+      correctAnswerIndex: 0,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_05.png',
+    ),
+    EducationQuestion(
+      question:
+          'Name the first black female gymnast that won gold medal awards during the 2012 and 2016 team and All-around Olympic Games in London and Rio de Janeiro.',
+      options: [
+        'Gabby Douglas',
+        'Simone Biles',
+        'Dianne Durham',
+        'Jordyn Wieber',
+      ],
+      correctAnswerIndex: 0,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_06.png',
+    ),
+    EducationQuestion(
+      question:
+          'Name two sisters from California who played professional American tennis and won double title championship gold medals awards in London in 2012.',
+      options: [
+        'Venus and Serena Jackson',
+        'Manuela and Katerina Maleeva',
+        'Serena and Venus Williams',
+        'Agnieszka Radwanska and Serena Williams',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_07.png',
+    ),
+    EducationQuestion(
+      question:
+          'Who was born in Mississippi, employed as a writer, news anchor, actress, producer, and created OWN and founder of a leadership academy for young women in Africa?',
+      options: [
+        'Viola Davis',
+        'Caroline Kennedy',
+        'Oprah "Opah" Winfrey',
+        'Melinda French Gates',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_08.png',
+    ),
+    EducationQuestion(
+      question:
+          'Who was a great writer, poet, actress, dancer, and recipient of the Pulitzer Prize and Presidential Medal of Freedom Award?',
+      options: [
+        'Shirley Caesar',
+        'Angela Bassett',
+        'Cicely Tyson',
+        'Maya Angelo',
+      ],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_09.png',
+    ),
+    EducationQuestion(
+      question:
+          'Who served as the district attorney in 2004, elected attorney general of California and became the 46th Vice President of the USA in 2021?',
+      options: [
+        'Barbara Bush',
+        'Mary Jane McLeod Bethune',
+        'Betty White',
+        'Kamala Devi Harris',
+        'Marilyn Monroe',
+      ],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_10.png',
+    ),
+    EducationQuestion(
+      question:
+          'Who was the first black woman born in Brooklyn, New York to be elected to the United States Congress in 1968 and later became the first candidate to run for a major-party nomination for President of the USA?',
+      options: [
+        'Madam C. J. Walker',
+        'Rosa Parks',
+        'Shirley Chisolm',
+        'Michelle Obama',
+        'Eleanor Roosevelt',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_11.png',
+    ),
+    EducationQuestion(
+      question: 'Who was the first black president of the United States?',
+      options: [
+        'President John Lewis',
+        'President James Jefferson',
+        'President Barack Obama',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_12.png',
+    ),
+    EducationQuestion(
+      question:
+          'What are the names of four sororities belonging to the Divine Nine Black Greek Sororities and Fraternities?',
+      options: [
+        'Alpha Phi Alpha, Zeta Phi Beta, Delta Sigma Theta and Sigma Gamma Rho',
+        'Delta Sigma Theta, Alpha Kappa Alpha, Omega Psi Phi and Kappa Alpha Psi',
+        'Alpha Phi Alpha, Iota Phi Theta, Delta Sigma Theta and Alpha Kappa Alpha',
+        'Alpha Kappa Alpha, Delta Sigma Theta, Sigma Gamma Rho and Zeta Phi Beta.',
+      ],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_13.png',
+    ),
+    EducationQuestion(
+      question: 'Who were the first person to create and fly an airplane?',
+      options: [
+        'The Simpsons sisters',
+        'Johnson Brothers',
+        'Wright Brothers',
+        'None of the above',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_14.png',
+    ),
+    EducationQuestion(
+      question: 'Who was Dr. Martin Luther King Jr.?',
+      options: [
+        'A lawyer',
+        'A Civil Rights Leader',
+        'A pastor',
+        'A Nobel Peace prize winner',
+        'Both B, C, and D',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 4,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_15.png',
+    ),
+    EducationQuestion(
+      question:
+          'What politician was born in Georgia and served as a veteran, governor and president of the USA?',
+      options: [
+        'President Ronald Regan',
+        'President Andrew Jackson',
+        'President James Earl Carter Jr.',
+        'President Franklin Roosevelt',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_16.png',
+    ),
+    EducationQuestion(
+      question: 'Who was the first astronaut to walk on the moon for NASA?',
+      options: [
+        'Andrew Jackson',
+        'Thomas Wilson',
+        'Neil Armstrong',
+        'All the above.',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.history,
+      imagePath: 'assets/education/edu_17.png',
+    ),
+  ];
+
+  // List of all science questions
+  static final List<EducationQuestion> scienceQuestions = [
+    EducationQuestion(
+      question: 'What makes up a cloud in the sky?',
+      options: [
+        'Rain and snow particle on the ground.',
+        'Dirt particles and rain floating in the sky.',
+        'Water drops and ice crystals floating in the sky.',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_18.png',
+    ),
+    EducationQuestion(
+      question: 'What is the chemical compound name for NaCl?',
+      options: ['Sugar', 'Salt', 'Water', 'All the above.'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_19.png',
+    ),
+    EducationQuestion(
+      question: 'What is the chemical compound name for H2O?',
+      options: ['Sugar', 'Soap', 'Water', 'All the above.'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_20.png',
+    ),
+    EducationQuestion(
+      question: 'What are the two elements\' names for Ag and Na?',
+      options: [
+        'Gold and Sodium',
+        'Silver and Sodium',
+        'Gold and Nitrogen',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_21.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is biology?',
+      options: [
+        'Study of musical instruments.',
+        'Study of dance.',
+        'Study of living things and their vital processes of life.',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_22.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is an atom?',
+      options: [
+        'Smallest part of a substance that cannot be broken down chemically.',
+        'Is a particle that consists of a nucleus and electrons surrounded by electrons.',
+        'Both A and B.',
+        'None of the above',
+      ],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.science,
+      imagePath: 'assets/education/edu_23.png',
+    ),
+
+    // Math questions
+    EducationQuestion(
+      question:
+          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n6a (2x3+2)=__',
+      options: ['91', '95', '96', '89'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_24.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n7-a+3=__',
+      options: ['7', '8', '9', '5'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_25.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n4(b+3+7)=__',
+      options: ['15', '52', '49', '28'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_26.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the square root of the math problem?\n√96 is',
+      options: ['9.251', '9.797', '8.976', '9.716'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_27.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the square root of the math problem?\n√27 is',
+      options: ['3.876', '5.197', '5.297', '5.196'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_28.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the square root of the math problem?\n√900 is',
+      options: ['27', '30', '60', '10'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_29.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math multiplication problem? 11x14=__',
+      options: ['104', '165', '154', '151'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_30.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math multiplication problem? 105x13=__',
+      options: ['1264', '1345', '1367', '1365'],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_31.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math multiplication problem? 333x12=__',
+      options: ['4132', '3997', '3996', '3101'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_32.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math subtraction problem? 1,967-652=__',
+      options: ['1123', '2318', '1314', '1315'],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_33.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math subtraction problem? 897-241=__',
+      options: ['616', '687', '646', '656'],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_34.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math subtraction problem? 719-501=__',
+      options: ['309', '218', '123', 'None of the above'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_35.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math addition problem? 4317+ 1,241=__',
+      options: ['7154', '6514', '5,558', '5517'],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_36.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math addition problem? 114+231+347=__',
+      options: ['567', '628', '692', '680'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_37.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math multiplication problem?\n9x6=__',
+      options: ['53', '54', '57', 'None of the above.'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_38.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math multiplication problem?\n12x10=__',
+      options: ['130', '121', '120', 'None of the above.'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_39.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the sum of the math multiplication problem? 60x24=__',
+      options: ['978', '1141', '1139', '1440'],
+      correctAnswerIndex: 3,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_40.png',
+    ),
+    // Additional Math questions
+    EducationQuestion(
+      question:
+          'What is the sum of the following math multiplication problem?\n9x4=__',
+      options: ['36', '45', '27', 'None of the above.'],
+      correctAnswerIndex: 0, // A. 36
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_41.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math multiplication problem?\n8x7=__',
+      options: ['36', '54', '56', 'None of the above.'],
+      correctAnswerIndex: 2, // C. 56
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_42.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math subtraction problem?\n12-4=__',
+      options: ['8', '6', '7', 'None of the above.'],
+      correctAnswerIndex: 0, // A. 8
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_43.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math subtraction problem?\n89-31=__',
+      options: ['47', '48', '58', 'None of the above.'],
+      correctAnswerIndex: 2, // C. 58
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_44.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math subtraction problem?\n21-16=__',
+      options: ['7', '4', '5', 'None of the above.'],
+      correctAnswerIndex: 2, // C. 5
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_45.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math addition problem?\n16+35=__',
+      options: ['53', '51', '50', 'None of the above.'],
+      correctAnswerIndex: 1, // B. 51
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_46.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'What is the sum of the following math addition problem?\n22+13=__',
+      options: ['37', '29', '35', 'None of the above.'],
+      correctAnswerIndex: 2, // C. 35
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_47.png',
+    ),
+
+    // English Questions
+    EducationQuestion(
+      question: 'Jessica walked to the park. What is the verb in the sentence?',
+      options: ['Walked', 'Jessica', 'To', 'None of the above.'],
+      correctAnswerIndex: 0, // A. Walked
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_48.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'She crossed the street by herself. What are the pronouns in the sentence?',
+      options: ['She', 'herself', 'by', 'Both A and B.', 'None of the above.'],
+      correctAnswerIndex: 3, // D. Both A and B
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_49.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Would you like to come to my party? Is this sentence asking a question or making a statement?',
+      options: ['Statement', 'Question', 'Both A and B', 'None of the above.'],
+      correctAnswerIndex: 1, // B. Question
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_50.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Jaime is going to the store. What are the nouns in the sentence?',
+      options: ['Store', 'Jaime', 'Jaime and store.', 'None of the above.'],
+      correctAnswerIndex: 2, // C. Jaime and store
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_51.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Mitchell won the basketball game. What are the nouns in the sentence?',
+      options: [
+        'Mitchell',
+        'basketball and game',
+        'A and B',
+        'None of the above.',
+      ],
+      correctAnswerIndex: 2, // C. A and B
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_52.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nDavid won the mathematics ________ award.',
+      options: ['acheevement', 'achievement', 'archievement'],
+      correctAnswerIndex: 1, // B. achievement
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_53.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nAnn ________ what dress she wanted to wear to the dance.',
+      options: ['know', 'knew', 'knows'],
+      correctAnswerIndex: 1, // B. knew
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_54.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nChrissy ________ her package in the mail.',
+      options: ['recieved', 'received', 'receved'],
+      correctAnswerIndex: 1, // B. received
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_55.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nRalph ________ the yellow and red truck.',
+      options: ['chose', 'choice', 'choose'],
+      correctAnswerIndex: 0, // A. chose
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_56.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nWendy ________ a new computer.',
+      options: ['brought', 'buys', 'bought'],
+      correctAnswerIndex: 2, // C. bought
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_57.png',
+    ),
+
+    // Spelling Questions
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Embarrassed', 'Embareassed', 'Emborassed'],
+      correctAnswerIndex: 0, // A. Embarrassed
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_58.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Calculater', 'Calkulator', 'Calculator'],
+      correctAnswerIndex: 2, // C. Calculator
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_59.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Calculater', 'Calkulator', 'Calculator'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_60.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Umbrela', 'Umbrilla', 'Umbrella'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_61.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Computer', 'Compater', 'Competer'],
+      correctAnswerIndex: 0,
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_62.png',
+    ),
+
+    EducationQuestion(
+      question: 'What is the correct Spelling word?',
+      options: ['Refigerator', 'Refrigerator', 'Refragerator'],
+      correctAnswerIndex: 1,
+      category: QuestionCategory.spelling,
+      imagePath: 'assets/education/edu_63.png',
+    ),
+  ];
+
+  // Get a random history question
+  static EducationQuestion getRandomHistoryQuestion() {
+    return historyQuestions[_random.nextInt(historyQuestions.length)];
+  }
+
+  // Get a random science question
+  static EducationQuestion getRandomScienceQuestion() {
+    return scienceQuestions[_random.nextInt(scienceQuestions.length)];
+  }
+
+  // Get a random question from any category
+  static EducationQuestion getRandomQuestion() {
+    final allQuestions = [...historyQuestions, ...scienceQuestions];
+    return allQuestions[_random.nextInt(allQuestions.length)];
+  }
+}
+
+// Map of board positions that trigger education questions
+final Set<int> educationQuestionPositions = {
+  1,
+  3,
+  5,
+  7,
+  8,
+  11,
+  13,
+  15,
+  17,
+  18,
+  21,
+  23,
+  25,
+  27,
+  28,
+  31,
+  33,
+  35,
+  37,
+  38,
+};
+
 // Welcome Screen that shows for 2 seconds
 class WelcomeScreen extends StatelessWidget {
   @override
@@ -1122,32 +1817,33 @@ class _CirclePatternState extends State<CirclePattern>
   void _handleLandingAction(int position) {
     PlayerData activePlayer = widget.players[activePlayerIndex];
 
+    print("${activePlayer.name} landed on square ${position}!");
+
     // Check if the position has a chore card
     if (choreCards.containsKey(position)) {
-      // Get the chore card for this position
-      ChoreCard choreCard = choreCards[position]!;
-
-      // Show the chore card popup
+      // Handle chore card (existing code)
       showDialog(
         context: context,
-        barrierDismissible: false, // Prevent closing by tapping outside
+        barrierDismissible: false,
         builder: (BuildContext context) {
           return ChoreGamePopup(
-            choreCard: choreCard,
+            choreCard: choreCards[position]!,
             onChoreComplete: (ChoreCard card) {
-              // Apply the chore reward effect
               _applyChoreReward(activePlayer, card);
             },
             onClose: () {
-              Navigator.of(context).pop(); // Close the dialog
+              Navigator.of(context).pop();
             },
           );
         },
       );
     }
+    // Check if the position has an education question
+    else if (educationQuestionPositions.contains(position)) {
+      _handleEducationQuestion(position);
+    }
     // Special case for jail square
     else if (position == 20) {
-      // Go to jail - move player to position 10
       _movePlayerToPosition(activePlayer, 10);
     }
 
@@ -2507,5 +3203,355 @@ class _ChoreGamePopupState extends State<ChoreGamePopup>
         ),
       ),
     );
+  }
+}
+
+class EducationReviewPopup extends StatefulWidget {
+  final EducationQuestion question;
+  final Function(bool isCorrect) onAnswerSubmitted;
+  final VoidCallback onClose;
+
+  const EducationReviewPopup({
+    Key? key,
+    required this.question,
+    required this.onAnswerSubmitted,
+    required this.onClose,
+  }) : super(key: key);
+
+  @override
+  _EducationReviewPopupState createState() => _EducationReviewPopupState();
+}
+
+class _EducationReviewPopupState extends State<EducationReviewPopup> {
+  int? selectedAnswerIndex;
+  bool hasSubmitted = false;
+  bool isCorrect = false;
+  bool showFeedback = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        decoration: BoxDecoration(
+          color: Color(0xFF00CED1), // Turquoise color matching the images
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black, width: 3),
+        ),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 16),
+                decoration: BoxDecoration(
+                  color: Color(0xFF00CED1),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'EDUCATION REVIEW',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      widget.question.category == QuestionCategory.history
+                          ? 'History'
+                          : 'Science',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
+              ),
+
+              // Question
+              Padding(
+                padding: EdgeInsets.all(16),
+                child: Text(
+                  widget.question.question,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+
+              // Options
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Column(
+                  children: List.generate(
+                    widget.question.options.length,
+                    (index) => _buildOptionItem(index),
+                  ),
+                ),
+              ),
+
+              // Feedback message (shown after submission)
+              if (showFeedback)
+                Container(
+                  margin: EdgeInsets.all(16),
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        isCorrect ? Colors.green.shade100 : Colors.red.shade100,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isCorrect ? Colors.green : Colors.red,
+                      width: 2,
+                    ),
+                  ),
+                  child: Text(
+                    isCorrect
+                        ? 'Correct! You earned \$10.'
+                        : 'Incorrect. You lost \$10. The correct answer was: ${widget.question.options[widget.question.correctAnswerIndex]}',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color:
+                          isCorrect
+                              ? Colors.green.shade800
+                              : Colors.red.shade800,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+
+              // Submit button
+              if (!hasSubmitted)
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    onPressed:
+                        selectedAnswerIndex != null ? _submitAnswer : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      disabledBackgroundColor: Colors.grey,
+                    ),
+                    child: Text(
+                      'Submit Answer',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Continue button (after submission)
+              if (hasSubmitted)
+                Padding(
+                  padding: EdgeInsets.all(16),
+                  child: ElevatedButton(
+                    onPressed: widget.onClose,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.blue,
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 16,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
+                    child: Text(
+                      'Continue Game',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Footer - Publisher info
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.symmetric(vertical: 10),
+                alignment: Alignment.center,
+                child: Text(
+                  'SAY IT NOW SELF-LOVE KIDS LLC GAME',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Helper method to build option items
+  Widget _buildOptionItem(int index) {
+    final isSelected = selectedAnswerIndex == index;
+    final isCorrectAnswer = widget.question.correctAnswerIndex == index;
+    final showCorrectHighlight = hasSubmitted && isCorrectAnswer;
+    final showWrongHighlight = hasSubmitted && isSelected && !isCorrectAnswer;
+
+    return Container(
+      margin: EdgeInsets.only(bottom: 10),
+      child: InkWell(
+        onTap:
+            hasSubmitted
+                ? null
+                : () {
+                  setState(() {
+                    selectedAnswerIndex = index;
+                  });
+                },
+        child: Container(
+          padding: EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color:
+                showCorrectHighlight
+                    ? Colors.green.shade100
+                    : showWrongHighlight
+                    ? Colors.red.shade100
+                    : isSelected
+                    ? Colors.white.withOpacity(0.7)
+                    : Colors.white.withOpacity(0.3),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(
+              color:
+                  showCorrectHighlight
+                      ? Colors.green
+                      : showWrongHighlight
+                      ? Colors.red
+                      : isSelected
+                      ? Colors.blue
+                      : Colors.black,
+              width: isSelected ? 2 : 1,
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 28,
+                height: 28,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? Colors.blue : Colors.white,
+                  border: Border.all(color: Colors.black),
+                ),
+                child: Center(
+                  child: Text(
+                    String.fromCharCode(65 + index), // 'A', 'B', 'C', etc.
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: isSelected ? Colors.white : Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  widget.question.options[index],
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontWeight:
+                        isSelected ? FontWeight.bold : FontWeight.normal,
+                  ),
+                ),
+              ),
+              if (showCorrectHighlight)
+                Icon(Icons.check_circle, color: Colors.green, size: 24),
+              if (showWrongHighlight)
+                Icon(Icons.cancel, color: Colors.red, size: 24),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // Submit answer and check if correct
+  void _submitAnswer() {
+    if (selectedAnswerIndex != null) {
+      setState(() {
+        hasSubmitted = true;
+        isCorrect = selectedAnswerIndex == widget.question.correctAnswerIndex;
+        showFeedback = true;
+      });
+
+      // Notify parent about result (this will trigger the money change)
+      widget.onAnswerSubmitted(isCorrect);
+    }
+  }
+}
+
+// Extension to handle education review in the main game
+extension EducationReviewHandler on _CirclePatternState {
+  // Method to handle education question when landing on specific squares
+  void _handleEducationQuestion(int position) {
+    if (educationQuestionPositions.contains(position)) {
+      // Get the current active player
+      PlayerData activePlayer = widget.players[activePlayerIndex];
+
+      // Get a random question
+      EducationQuestion question = EducationQuestionBank.getRandomQuestion();
+
+      // Show the education review popup
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return EducationReviewPopup(
+            question: question,
+            onAnswerSubmitted: (bool isCorrect) {
+              // Update player's money based on answer
+              if (isCorrect) {
+                activePlayer.addMoney(10); // Add $10 for correct answer
+              } else {
+                activePlayer.subtractMoney(10); // Subtract $10 for wrong answer
+              }
+
+              // Update the UI
+              setState(() {});
+            },
+            onClose: () {
+              Navigator.of(context).pop(); // Close the dialog
+            },
+          );
+        },
+      );
+    }
   }
 }
