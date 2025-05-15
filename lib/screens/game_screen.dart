@@ -1062,6 +1062,157 @@ class WelcomeScreen extends StatelessWidget {
   }
 }
 
+// First, let's add a new Set to track the penalty square positions
+final Set<int> penaltySquarePositions = {4, 14, 24, 34};
+
+// Now, let's create a new PenaltyPopup widget for displaying the penalty message
+class PenaltyPopup extends StatefulWidget {
+  final VoidCallback onClose;
+  final Function() onPenaltyApplied;
+
+  const PenaltyPopup({
+    Key? key,
+    required this.onClose,
+    required this.onPenaltyApplied,
+  }) : super(key: key);
+
+  @override
+  _PenaltyPopupState createState() => _PenaltyPopupState();
+}
+
+class _PenaltyPopupState extends State<PenaltyPopup>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 800),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
+    _animationController.forward();
+
+    // Apply the penalty automatically after a short delay
+    Future.delayed(Duration(seconds: 2), () {
+      widget.onPenaltyApplied();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
+        },
+        child: Container(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.4,
+          decoration: BoxDecoration(
+            color: Color(0xFFFF6347), // Tomato red color
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black, width: 3),
+            boxShadow: [
+              BoxShadow(color: Colors.black45, blurRadius: 10, spreadRadius: 2),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Main content
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Warning icon
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        size: 80,
+                        color: Colors.white,
+                      ),
+
+                      SizedBox(height: 20),
+
+                      // Title
+                      Text(
+                        "OOPS!",
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      SizedBox(height: 20),
+
+                      // Message
+                      Text(
+                        "You landed on a penalty square.\nYou lose \$10!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer
+              Positioned(
+                bottom: 15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    "SAY IT NOW SELF-LOVE KIDS LLC GAME",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Close button
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: widget.onClose,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 // Character Selection Screen with auto-scrolling
 class CharacterSelectionScreen extends StatefulWidget {
   final Function(List<PlayerData>) onGameStart;
@@ -1821,7 +1972,6 @@ class _CirclePatternState extends State<CirclePattern>
 
     // Check if the position has a chore card
     if (choreCards.containsKey(position)) {
-      // Handle chore card (existing code)
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -1841,6 +1991,25 @@ class _CirclePatternState extends State<CirclePattern>
     // Check if the position has an education question
     else if (educationQuestionPositions.contains(position)) {
       _handleEducationQuestion(position);
+    }
+    // Check if it's a penalty square
+    else if (penaltySquarePositions.contains(position)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return PenaltyPopup(
+            onPenaltyApplied: () {
+              // Deduct $10 from the player
+              activePlayer.subtractMoney(10);
+              setState(() {}); // Update UI to reflect the change
+            },
+            onClose: () {
+              Navigator.of(context).pop();
+            },
+          );
+        },
+      );
     }
     // Special case for jail square
     else if (position == 20) {

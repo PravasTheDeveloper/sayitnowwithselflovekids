@@ -419,7 +419,7 @@ class _ReadBooksState extends State<ReadBooks> {
                         scrollDirection: Axis.horizontal,
                         children: const [
                           RecentBookCard(
-                            imageUrl: 'assets/images/book1.png',
+                            imageUrl: 'assets/images/book1.jpeg',
                             title: 'THE REDDUCK FAMILY TALES',
                             lastRead: 'Last read: Today',
                           ),
@@ -475,7 +475,7 @@ class _ReadBooksState extends State<ReadBooks> {
                           ),
                       delegate: SliverChildListDelegate([
                         BookCard(
-                          imageUrl: 'assets/images/book1.png',
+                          imageUrl: 'assets/images/book1.jpeg',
                           title: 'THE REDDUCK FAMILY TALES',
                           tags: const ['Ages 6-8', 'Educational'],
                           pdfName: 'book1', // Pass pdfName here
