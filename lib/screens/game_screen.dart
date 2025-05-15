@@ -77,6 +77,14 @@ class PlayerData {
   // Add player position property
   int position = 0; // Starting position (0 = first square)
 
+  // Add turn tracking
+  int turnsCompleted = 0;
+
+  int lapsCompleted = 0;
+
+  // Add question history tracking
+  List<QuestionHistoryItem> questionHistory = [];
+
   PlayerData({
     required this.name,
     required this.color,
@@ -206,6 +214,39 @@ class PlayerData {
 
     return false; // Couldn't make exact change
   }
+
+  // Method to add completed turn
+  void completeTurn() {
+    turnsCompleted++;
+  }
+
+  // Method to add question to history
+  void addQuestionToHistory(
+    EducationQuestion question,
+    int answeredIndex,
+    bool wasCorrect,
+  ) {
+    questionHistory.add(
+      QuestionHistoryItem(
+        question: question,
+        answeredIndex: answeredIndex,
+        wasCorrect: wasCorrect,
+      ),
+    );
+  }
+}
+
+// Class to store question history items
+class QuestionHistoryItem {
+  final EducationQuestion question;
+  final int answeredIndex;
+  final bool wasCorrect;
+
+  QuestionHistoryItem({
+    required this.question,
+    required this.answeredIndex,
+    required this.wasCorrect,
+  });
 }
 
 // Add this code right after your imports
@@ -1790,14 +1831,16 @@ class _CirclePatternState extends State<CirclePattern>
   }
 
   // New method to initialize player positions
+  // New method to initialize player positions
   void _initializePlayerPositions() {
     // Clear existing positions
     boardPositions.clear();
 
-    // Place all players at the starting position (0)
-    boardPositions[0] = [];
+    // Place all players at position 39 (near the end of the board)
+    boardPositions[39] = [];
     for (var player in widget.players) {
-      boardPositions[0]?.add(player);
+      player.position = 39; // Set initial position to 39
+      boardPositions[39]?.add(player);
     }
   }
 
@@ -1916,9 +1959,44 @@ class _CirclePatternState extends State<CirclePattern>
         return;
       }
 
+      // Store previous position for lap detection
+      int previousPosition = currentAnimationPosition;
+
       // Move to next position
       currentAnimationPosition =
           (currentAnimationPosition + 1) % totalBoardSquares;
+
+      // Check if player has crossed the start position (0)
+      if (previousPosition == totalBoardSquares - 1 &&
+          currentAnimationPosition == 0) {
+        // Player completed a lap, increment lap counter
+        PlayerData activePlayer = widget.players[activePlayerIndex];
+        activePlayer.lapsCompleted++;
+
+        // Show notification message
+        _showActionMessage(
+          "${activePlayer.name} completed lap ${activePlayer.lapsCompleted}!",
+        );
+
+        // After completing lap 2, show question summary
+        if (activePlayer.lapsCompleted == 2) {
+          // Schedule this to happen after movement completes
+          Future.delayed(Duration(milliseconds: 500), () {
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return QuestionSummaryPopup(
+                  player: activePlayer,
+                  onClose: () {
+                    Navigator.of(context).pop();
+                  },
+                );
+              },
+            );
+          });
+        }
+      }
 
       // Update player position in the map
       _updatePlayerPositionInMap();
@@ -2147,6 +2225,11 @@ class _CirclePatternState extends State<CirclePattern>
     // Don't allow changing players if animation is in progress
     if (isAnimatingMovement) return;
 
+    // Increment turns completed for the current player
+    PlayerData currentPlayer = widget.players[activePlayerIndex];
+    currentPlayer.completeTurn();
+
+    // Move to next player
     setState(() {
       activePlayerIndex = (activePlayerIndex + 1) % widget.players.length;
     });
@@ -3377,7 +3460,8 @@ class _ChoreGamePopupState extends State<ChoreGamePopup>
 
 class EducationReviewPopup extends StatefulWidget {
   final EducationQuestion question;
-  final Function(bool isCorrect) onAnswerSubmitted;
+  final Function(bool isCorrect, int selectedIndex)
+  onAnswerSubmitted; // Updated to include selectedIndex
   final VoidCallback onClose;
 
   const EducationReviewPopup({
@@ -3680,8 +3764,8 @@ class _EducationReviewPopupState extends State<EducationReviewPopup> {
         showFeedback = true;
       });
 
-      // Notify parent about result (this will trigger the money change)
-      widget.onAnswerSubmitted(isCorrect);
+      // Notify parent about result with the selected index
+      widget.onAnswerSubmitted(isCorrect, selectedAnswerIndex!);
     }
   }
 }
@@ -3704,13 +3788,20 @@ extension EducationReviewHandler on _CirclePatternState {
         builder: (BuildContext context) {
           return EducationReviewPopup(
             question: question,
-            onAnswerSubmitted: (bool isCorrect) {
+            onAnswerSubmitted: (bool isCorrect, int selectedIndex) {
               // Update player's money based on answer
               if (isCorrect) {
                 activePlayer.addMoney(10); // Add $10 for correct answer
               } else {
                 activePlayer.subtractMoney(10); // Subtract $10 for wrong answer
               }
+
+              // Track this question in player's history
+              activePlayer.addQuestionToHistory(
+                question,
+                selectedIndex, // Now using the parameter passed from the popup
+                isCorrect,
+              );
 
               // Update the UI
               setState(() {});
@@ -3722,5 +3813,299 @@ extension EducationReviewHandler on _CirclePatternState {
         },
       );
     }
+  }
+}
+
+class QuestionSummaryPopup extends StatelessWidget {
+  final PlayerData player;
+  final VoidCallback onClose;
+
+  const QuestionSummaryPopup({
+    Key? key,
+    required this.player,
+    required this.onClose,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      insetPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+      child: Container(
+        width: double.infinity,
+        constraints: BoxConstraints(
+          maxHeight: MediaQuery.of(context).size.height * 0.8,
+        ),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [Color(0xFF00CED1), Color(0xFF008B8B)],
+          ),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white, width: 2),
+          boxShadow: [
+            BoxShadow(color: Colors.black38, blurRadius: 10, spreadRadius: 1),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Header
+            Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.indigo.withOpacity(0.7),
+                borderRadius: BorderRadius.only(
+                  topLeft: Radius.circular(10),
+                  topRight: Radius.circular(10),
+                ),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: player.color, width: 2),
+                    ),
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: Image.asset(player.imagePath, fit: BoxFit.cover),
+                    ),
+                  ),
+                  SizedBox(width: 12),
+                  Text(
+                    '${player.name}\'s Learning Report',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Content - Questions History
+            Expanded(
+              child:
+                  player.questionHistory.isEmpty
+                      ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(20.0),
+                          child: Text(
+                            'No questions answered yet!',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      )
+                      : ListView.builder(
+                        padding: EdgeInsets.all(16),
+                        itemCount: player.questionHistory.length,
+                        itemBuilder: (context, index) {
+                          final item = player.questionHistory[index];
+                          return _buildQuestionHistoryItem(item, index);
+                        },
+                      ),
+            ),
+
+            // Performance summary
+            _buildPerformanceSummary(),
+
+            // Close button
+            Padding(
+              padding: EdgeInsets.all(16),
+              child: ElevatedButton(
+                onPressed: onClose,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  padding: EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+                child: Text(
+                  'Continue Game',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build individual question history item
+  Widget _buildQuestionHistoryItem(QuestionHistoryItem item, int itemIndex) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.9),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: item.wasCorrect ? Colors.green : Colors.red,
+          width: 2,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Question number and result
+          Row(
+            children: [
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: item.wasCorrect ? Colors.green : Colors.red,
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                child: Text(
+                  'Question ${itemIndex + 1}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              Spacer(),
+              Icon(
+                item.wasCorrect ? Icons.check_circle : Icons.cancel,
+                color: item.wasCorrect ? Colors.green : Colors.red,
+                size: 24,
+              ),
+              SizedBox(width: 4),
+              Text(
+                item.wasCorrect ? 'Correct' : 'Incorrect',
+                style: TextStyle(
+                  color: item.wasCorrect ? Colors.green : Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+
+          SizedBox(height: 12),
+
+          // Question text
+          Text(
+            item.question.question,
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+
+          SizedBox(height: 12),
+
+          // Your answer
+          _buildAnswerItem(
+            'Your answer:',
+            item.question.options[item.answeredIndex],
+            item.wasCorrect,
+          ),
+
+          // If incorrect, show correct answer
+          if (!item.wasCorrect)
+            _buildAnswerItem(
+              'Correct answer:',
+              item.question.options[item.question.correctAnswerIndex],
+              true,
+            ),
+        ],
+      ),
+    );
+  }
+
+  // Build answer display
+  Widget _buildAnswerItem(String label, String answer, bool isCorrect) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8.0),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: TextStyle(fontWeight: FontWeight.bold)),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              answer,
+              style: TextStyle(
+                color: isCorrect ? Colors.green.shade800 : Colors.red.shade800,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build performance summary
+  Widget _buildPerformanceSummary() {
+    // Calculate statistics
+    int totalQuestions = player.questionHistory.length;
+    int correctAnswers =
+        player.questionHistory.where((item) => item.wasCorrect).length;
+    double percentage =
+        totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
+
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.indigo.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        children: [
+          Text(
+            'Performance Summary',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+          SizedBox(height: 8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildStatItem('Total', totalQuestions.toString()),
+              _buildStatItem('Correct', correctAnswers.toString()),
+              _buildStatItem('Score', '${percentage.toStringAsFixed(0)}%'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build stat display
+  Widget _buildStatItem(String label, String value) {
+    return Column(
+      children: [
+        Text(label, style: TextStyle(fontSize: 14, color: Colors.white70)),
+        SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ],
+    );
   }
 }
