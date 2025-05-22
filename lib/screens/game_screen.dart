@@ -369,6 +369,7 @@ class EducationQuestionBank {
 
   // List of all history questions
   static final List<EducationQuestion> historyQuestions = [
+    // Your existing history questions here...
     EducationQuestion(
       question:
           'What producer, director, screenplay writer and actor established their own production company on the former Army Military base, Fort McPherson in Atlanta, Georgia?',
@@ -383,20 +384,22 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_02.png',
     ),
+
     EducationQuestion(
       question:
-          'Name the female rapper, singer and actress who played in movies as an physical therapist and cab driver',
+          'Name the female rapper, singer and actress who played in movies as a physical therapist and cab driver.',
       options: [
         'Dana Owens',
         'Cardi B',
-        'Gloria "Glorilla" Woods',
+        'Gloria “Glorilla” Woods',
         'Megan The Stallion',
         'Nicki Minaj',
       ],
-      correctAnswerIndex: 0, // Dana Owens (Queen Latifah)
+      correctAnswerIndex: 0,
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_03.png',
     ),
+
     EducationQuestion(
       question:
           'What is the name of the country/pop singer who was a member of a female group who later became an actress in Dreamgirls and Obsessed movie?',
@@ -410,19 +413,21 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_04.png',
     ),
+
     EducationQuestion(
       question:
           'Name three NBA players who played on the Los Angeles Lakers team and won championships.',
       options: [
-        'Shaquille "Shaq" O\'Neal, Kobe Bryant and Larry Bird',
+        'Shaquille “Shaq” O’Neal, Kobe Bryant and Larry Bird',
         'LeBron James, Kobe Bryant and Michael Jordan',
-        'Scottie Pippen Sr., Earvin "Magic" Johnson Jr., and Kobe Bryant',
-        'Kobe Bryant, Shaquille "Shaq" O\'Neal and LeBron James',
+        'Scottie Pippen Sr., Earvin “Magic” Johnson Jr., and Kobe Bryant',
+        'Kobe Bryant, Shaquille “Shaq” O\'Neal and LeBron James',
       ],
-      correctAnswerIndex: 0,
+      correctAnswerIndex: 3,
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_05.png',
     ),
+
     EducationQuestion(
       question:
           'Name the first black female gymnast that won gold medal awards during the 2012 and 2016 team and All-around Olympic Games in London and Rio de Janeiro.',
@@ -436,6 +441,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_06.png',
     ),
+
     EducationQuestion(
       question:
           'Name two sisters from California who played professional American tennis and won double title championship gold medals awards in London in 2012.',
@@ -449,19 +455,21 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_07.png',
     ),
+
     EducationQuestion(
       question:
           'Who was born in Mississippi, employed as a writer, news anchor, actress, producer, and created OWN and founder of a leadership academy for young women in Africa?',
       options: [
         'Viola Davis',
         'Caroline Kennedy',
-        'Oprah "Opah" Winfrey',
+        'Oprah “Opah” Winfrey',
         'Melinda French Gates',
       ],
       correctAnswerIndex: 2,
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_08.png',
     ),
+
     EducationQuestion(
       question:
           'Who was a great writer, poet, actress, dancer, and recipient of the Pulitzer Prize and Presidential Medal of Freedom Award?',
@@ -475,6 +483,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_09.png',
     ),
+
     EducationQuestion(
       question:
           'Who served as the district attorney in 2004, elected attorney general of California and became the 46th Vice President of the USA in 2021?',
@@ -489,13 +498,14 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_10.png',
     ),
+
     EducationQuestion(
       question:
           'Who was the first black woman born in Brooklyn, New York to be elected to the United States Congress in 1968 and later became the first candidate to run for a major-party nomination for President of the USA?',
       options: [
         'Madam C. J. Walker',
         'Rosa Parks',
-        'Shirley Chisolm',
+        'Shirley Chisholm',
         'Michelle Obama',
         'Eleanor Roosevelt',
       ],
@@ -503,6 +513,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_11.png',
     ),
+
     EducationQuestion(
       question: 'Who was the first black president of the United States?',
       options: [
@@ -515,6 +526,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_12.png',
     ),
+
     EducationQuestion(
       question:
           'What are the names of four sororities belonging to the Divine Nine Black Greek Sororities and Fraternities?',
@@ -528,6 +540,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_13.png',
     ),
+
     EducationQuestion(
       question: 'Who were the first person to create and fly an airplane?',
       options: [
@@ -540,8 +553,9 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_14.png',
     ),
+
     EducationQuestion(
-      question: 'Who was Dr. Martin Luther King Jr.?',
+      question: 'Who was Dr. Martin Luther King Jr?',
       options: [
         'A lawyer',
         'A Civil Rights Leader',
@@ -554,6 +568,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_15.png',
     ),
+
     EducationQuestion(
       question:
           'What politician was born in Georgia and served as a veteran, governor and president of the USA?',
@@ -567,6 +582,7 @@ class EducationQuestionBank {
       category: QuestionCategory.history,
       imagePath: 'assets/education/edu_16.png',
     ),
+
     EducationQuestion(
       question: 'Who was the first astronaut to walk on the moon for NASA?',
       options: [
@@ -595,6 +611,7 @@ class EducationQuestionBank {
       category: QuestionCategory.science,
       imagePath: 'assets/education/edu_18.png',
     ),
+
     EducationQuestion(
       question: 'What is the chemical compound name for NaCl?',
       options: ['Sugar', 'Salt', 'Water', 'All the above.'],
@@ -602,6 +619,7 @@ class EducationQuestionBank {
       category: QuestionCategory.science,
       imagePath: 'assets/education/edu_19.png',
     ),
+
     EducationQuestion(
       question: 'What is the chemical compound name for H2O?',
       options: ['Sugar', 'Soap', 'Water', 'All the above.'],
@@ -609,8 +627,9 @@ class EducationQuestionBank {
       category: QuestionCategory.science,
       imagePath: 'assets/education/edu_20.png',
     ),
+
     EducationQuestion(
-      question: 'What are the two elements\' names for Ag and Na?',
+      question: 'What are the two elements’ names for Ag and Na?',
       options: [
         'Gold and Sodium',
         'Silver and Sodium',
@@ -647,8 +666,10 @@ class EducationQuestionBank {
       category: QuestionCategory.science,
       imagePath: 'assets/education/edu_23.png',
     ),
+  ];
 
-    // Math questions
+  // List of all math questions
+  static final List<EducationQuestion> mathQuestions = [
     EducationQuestion(
       question:
           'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n6a (2x3+2)=__',
@@ -657,144 +678,140 @@ class EducationQuestionBank {
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_24.png',
     ),
-
     EducationQuestion(
       question:
-          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n7-a+3=__',
+          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n7 - a + 3 = __',
       options: ['7', '8', '9', '5'],
       correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_25.png',
     ),
-
     EducationQuestion(
       question:
-          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n4(b+3+7)=__',
+          'If a is equal to 2 and b is equal to 3 solve the algebra problem.\n4(b + 3 + 7) = __',
       options: ['15', '52', '49', '28'],
       correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_26.png',
     ),
-
     EducationQuestion(
-      question: 'What is the square root of the math problem?\n√96 is',
+      question: 'What is the square root of the math problem?\n√96 = __',
       options: ['9.251', '9.797', '8.976', '9.716'],
       correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_27.png',
     ),
-
     EducationQuestion(
-      question: 'What is the square root of the math problem?\n√27 is',
+      question: 'What is the square root of the math problem?\n√27 = __',
       options: ['3.876', '5.197', '5.297', '5.196'],
-      correctAnswerIndex: 1,
+      correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_28.png',
     ),
-
     EducationQuestion(
-      question: 'What is the square root of the math problem?\n√900 is',
+      question: 'What is the square root of the math problem?\n√900 = __',
       options: ['27', '30', '60', '10'],
       correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_29.png',
     ),
-
     EducationQuestion(
-      question: 'What is the sum of the math multiplication problem? 11x14=__',
+      question:
+          'What is the sum of the math multiplication problems?\n11 × 14 = __',
       options: ['104', '165', '154', '151'],
       correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_30.png',
     ),
-
     EducationQuestion(
-      question: 'What is the sum of the math multiplication problem? 105x13=__',
+      question:
+          'What is the sum of the math multiplication problems?\n105 × 13 = __',
       options: ['1264', '1345', '1367', '1365'],
       correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_31.png',
     ),
-
     EducationQuestion(
-      question: 'What is the sum of the math multiplication problem? 333x12=__',
-      options: ['4132', '3997', '3996', '3101'],
-      correctAnswerIndex: 2,
+      question:
+          'What is the sum of the math multiplication problems?\n60 × 24 = __',
+      options: ['978', '1141', '1139', '1140'],
+      correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_32.png',
     ),
-
     EducationQuestion(
-      question: 'What is the sum of the math subtraction problem? 1,967-652=__',
-      options: ['1123', '2318', '1314', '1315'],
-      correctAnswerIndex: 3,
+      question:
+          'What is the sum of the math multiplication problems?\n333 × 12 = __',
+      options: ['4132', '3997', '3996', '3101'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_33.png',
     ),
 
     EducationQuestion(
-      question: 'What is the sum of the math subtraction problem? 897-241=__',
-      options: ['616', '687', '646', '656'],
+      question:
+          'What is the sum of the math subtraction problem?\n1,967-652=__',
+      options: ['1123', '2318', '1314', '1315'],
       correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_34.png',
     ),
 
     EducationQuestion(
-      question: 'What is the sum of the math subtraction problem? 719-501=__',
-      options: ['309', '218', '123', 'None of the above'],
-      correctAnswerIndex: 1,
+      question: 'What is the sum of the math subtraction problem?\n897-241=__',
+      options: ['616', '687', '646', '656'],
+      correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_35.png',
     ),
 
     EducationQuestion(
-      question: 'What is the sum of the math addition problem? 4317+ 1,241=__',
-      options: ['7154', '6514', '5,558', '5517'],
-      correctAnswerIndex: 3,
+      question: 'What is the sum of the math subtraction problem?\n719-501=__',
+      options: ['309', '218', '123', 'None of the above'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_36.png',
     ),
 
     EducationQuestion(
-      question: 'What is the sum of the math addition problem? 114+231+347=__',
-      options: ['567', '628', '692', '680'],
+      question: 'What is the sum of the math addition problem?\n4317+ 1,241=__',
+      options: ['7154', '6514', '5,558', '5517'],
       correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_37.png',
     ),
 
     EducationQuestion(
-      question:
-          'What is the sum of the following math multiplication problem?\n9x6=__',
-      options: ['53', '54', '57', 'None of the above.'],
-      correctAnswerIndex: 1,
+      question: 'What is the sum of the math addition problem?\n114+231+347=__',
+      options: ['567', '628', '692', '680'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_38.png',
     ),
 
     EducationQuestion(
       question:
-          'What is the sum of the following math multiplication problem?\n12x10=__',
-      options: ['130', '121', '120', 'None of the above.'],
-      correctAnswerIndex: 2,
+          'What is the sum of the following math multiplication problem?\n9x6=__',
+      options: ['53', '54', '57', 'None of the above'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_39.png',
     ),
 
     EducationQuestion(
-      question: 'What is the sum of the math multiplication problem? 60x24=__',
-      options: ['978', '1141', '1139', '1440'],
-      correctAnswerIndex: 3,
+      question:
+          'What is the sum of the following math multiplication problem?\n12x10=__',
+      options: ['130', '121', '120', 'None of the above'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_40.png',
     ),
-    // Additional Math questions
+
     EducationQuestion(
       question:
           'What is the sum of the following math multiplication problem?\n9x4=__',
-      options: ['36', '45', '27', 'None of the above.'],
-      correctAnswerIndex: 0, // A. 36
+      options: ['36', '45', '27', 'None of the above'],
+      correctAnswerIndex: 0,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_41.png',
     ),
@@ -802,8 +819,8 @@ class EducationQuestionBank {
     EducationQuestion(
       question:
           'What is the sum of the following math multiplication problem?\n8x7=__',
-      options: ['36', '54', '56', 'None of the above.'],
-      correctAnswerIndex: 2, // C. 56
+      options: ['36', '54', '56', 'None of the above'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_42.png',
     ),
@@ -811,8 +828,8 @@ class EducationQuestionBank {
     EducationQuestion(
       question:
           'What is the sum of the following math subtraction problem?\n12-4=__',
-      options: ['8', '6', '7', 'None of the above.'],
-      correctAnswerIndex: 0, // A. 8
+      options: ['8', '6', '7', 'None of the above'],
+      correctAnswerIndex: 0,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_43.png',
     ),
@@ -820,8 +837,8 @@ class EducationQuestionBank {
     EducationQuestion(
       question:
           'What is the sum of the following math subtraction problem?\n89-31=__',
-      options: ['47', '48', '58', 'None of the above.'],
-      correctAnswerIndex: 2, // C. 58
+      options: ['47', '48', '50', 'None of the above'],
+      correctAnswerIndex: 3,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_44.png',
     ),
@@ -829,64 +846,75 @@ class EducationQuestionBank {
     EducationQuestion(
       question:
           'What is the sum of the following math subtraction problem?\n21-16=__',
-      options: ['7', '4', '5', 'None of the above.'],
-      correctAnswerIndex: 2, // C. 5
+      options: ['7', '4', '5', 'None of the above'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_45.png',
     ),
 
     EducationQuestion(
       question:
-          'What is the sum of the following math addition problem?\n16+35=__',
-      options: ['53', '51', '50', 'None of the above.'],
-      correctAnswerIndex: 1, // B. 51
+          'What is the sum of the following math addition problem?\n19+67=__',
+      options: ['83', '71', '86', 'None of the above'],
+      correctAnswerIndex: 2,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_46.png',
     ),
 
     EducationQuestion(
       question:
-          'What is the sum of the following math addition problem?\n22+13=__',
-      options: ['37', '29', '35', 'None of the above.'],
-      correctAnswerIndex: 2, // C. 35
+          'What is the sum of the following math addition problem?\n16+35=__',
+      options: ['53', '51', '50', 'None of the above'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.math,
       imagePath: 'assets/education/edu_47.png',
     ),
 
-    // English Questions
-    EducationQuestion(
-      question: 'Jessica walked to the park. What is the verb in the sentence?',
-      options: ['Walked', 'Jessica', 'To', 'None of the above.'],
-      correctAnswerIndex: 0, // A. Walked
-      category: QuestionCategory.english,
-      imagePath: 'assets/education/edu_48.png',
-    ),
-
     EducationQuestion(
       question:
-          'She crossed the street by herself. What are the pronouns in the sentence?',
-      options: ['She', 'herself', 'by', 'Both A and B.', 'None of the above.'],
-      correctAnswerIndex: 3, // D. Both A and B
+          'What is the sum of the following math addition problem?\n22+13=__',
+      options: ['37', '29', '35', 'None of the above'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.math,
+      imagePath: 'assets/education/edu_48.png',
+    ),
+  ];
+
+  // List of all English questions
+  static final List<EducationQuestion> englishQuestions = [
+    EducationQuestion(
+      question: 'Jessica walked to the park. What is the verb in the sentence?',
+      options: ['Walked', 'Jessica', 'To', 'None of the above'],
+      correctAnswerIndex: 0,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_49.png',
     ),
 
     EducationQuestion(
       question:
-          'Would you like to come to my party? Is this sentence asking a question or making a statement?',
-      options: ['Statement', 'Question', 'Both A and B', 'None of the above.'],
-      correctAnswerIndex: 1, // B. Question
+          'She crossed the street by herself. What are the pronouns in the sentence?',
+      options: ['She', 'herself', 'by', 'Both A and B', 'None of the above'],
+      correctAnswerIndex: 3,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_50.png',
     ),
 
     EducationQuestion(
       question:
-          'Jaime is going to the store. What are the nouns in the sentence?',
-      options: ['Store', 'Jaime', 'Jaime and store.', 'None of the above.'],
-      correctAnswerIndex: 2, // C. Jaime and store
+          'Would you like to come to my party? Is this sentence asking a question or making a statement?',
+      options: ['Statement', 'Question', 'Both A and B', 'None of the above'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_51.png',
+    ),
+
+    EducationQuestion(
+      question:
+          'Jaime is going to the store. What are the nouns in the sentence?',
+      options: ['Store', 'Jaime', 'Jaime and store', 'None of the above'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_52.png',
     ),
 
     EducationQuestion(
@@ -896,71 +924,65 @@ class EducationQuestionBank {
         'Mitchell',
         'basketball and game',
         'A and B',
-        'None of the above.',
+        'None of the above',
       ],
-      correctAnswerIndex: 2, // C. A and B
-      category: QuestionCategory.english,
-      imagePath: 'assets/education/edu_52.png',
-    ),
-
-    EducationQuestion(
-      question:
-          'Place the correct word to make a complete sentence structure.\nDavid won the mathematics ________ award.',
-      options: ['acheevement', 'achievement', 'archievement'],
-      correctAnswerIndex: 1, // B. achievement
+      correctAnswerIndex: 2,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_53.png',
     ),
 
     EducationQuestion(
       question:
-          'Place the correct word to make a complete sentence structure.\nAnn ________ what dress she wanted to wear to the dance.',
-      options: ['know', 'knew', 'knows'],
-      correctAnswerIndex: 1, // B. knew
+          'Place the correct word to make a complete sentence structure.\nDavid won the mathematics _______ award.',
+      options: ['acheevement', 'achievement', 'archievement'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_54.png',
     ),
 
     EducationQuestion(
       question:
-          'Place the correct word to make a complete sentence structure.\nChrissy ________ her package in the mail.',
-      options: ['recieved', 'received', 'receved'],
-      correctAnswerIndex: 1, // B. received
+          'Place the correct word to make a complete sentence structure.\nAnn _______ what dress she wanted to wear to the dance.',
+      options: ['know', 'knew', 'knows'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_55.png',
     ),
 
     EducationQuestion(
       question:
-          'Place the correct word to make a complete sentence structure.\nRalph ________ the yellow and red truck.',
-      options: ['chose', 'choice', 'choose'],
-      correctAnswerIndex: 0, // A. chose
+          'Place the correct word to make a complete sentence structure.\nChrissy _______ her package in the mail.',
+      options: ['recieved', 'received', 'receved'],
+      correctAnswerIndex: 1,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_56.png',
     ),
 
     EducationQuestion(
       question:
-          'Place the correct word to make a complete sentence structure.\nWendy ________ a new computer.',
-      options: ['brought', 'buys', 'bought'],
-      correctAnswerIndex: 2, // C. bought
+          'Place the correct word to make a complete sentence structure.\nRalph _______ the yellow and red truck.',
+      options: ['chose', 'choice', 'choose'],
+      correctAnswerIndex: 0,
       category: QuestionCategory.english,
       imagePath: 'assets/education/edu_57.png',
     ),
 
-    // Spelling Questions
+    EducationQuestion(
+      question:
+          'Place the correct word to make a complete sentence structure.\nWendy _______ a new computer.',
+      options: ['brought', 'buys', 'bought'],
+      correctAnswerIndex: 2,
+      category: QuestionCategory.english,
+      imagePath: 'assets/education/edu_58.png',
+    ),
+  ];
+
+  // List of all spelling questions
+  static final List<EducationQuestion> spellingQuestions = [
     EducationQuestion(
       question: 'What is the correct Spelling word?',
       options: ['Embarrassed', 'Embareassed', 'Emborassed'],
-      correctAnswerIndex: 0, // A. Embarrassed
-      category: QuestionCategory.spelling,
-      imagePath: 'assets/education/edu_58.png',
-    ),
-
-    EducationQuestion(
-      question: 'What is the correct Spelling word?',
-      options: ['Calculater', 'Calkulator', 'Calculator'],
-      correctAnswerIndex: 2, // C. Calculator
+      correctAnswerIndex: 0,
       category: QuestionCategory.spelling,
       imagePath: 'assets/education/edu_59.png',
     ),
@@ -1008,10 +1030,49 @@ class EducationQuestionBank {
     return scienceQuestions[_random.nextInt(scienceQuestions.length)];
   }
 
+  // Get a random math question
+  static EducationQuestion getRandomMathQuestion() {
+    return mathQuestions[_random.nextInt(mathQuestions.length)];
+  }
+
+  // Get a random English question
+  static EducationQuestion getRandomEnglishQuestion() {
+    return englishQuestions[_random.nextInt(englishQuestions.length)];
+  }
+
+  // Get a random spelling question
+  static EducationQuestion getRandomSpellingQuestion() {
+    return spellingQuestions[_random.nextInt(spellingQuestions.length)];
+  }
+
   // Get a random question from any category
   static EducationQuestion getRandomQuestion() {
-    final allQuestions = [...historyQuestions, ...scienceQuestions];
+    final allQuestions = [
+      ...historyQuestions,
+      ...scienceQuestions,
+      ...mathQuestions,
+      ...englishQuestions,
+      ...spellingQuestions,
+    ];
     return allQuestions[_random.nextInt(allQuestions.length)];
+  }
+
+  // Get a random question by specific category
+  static EducationQuestion getRandomQuestionByCategory(
+    QuestionCategory category,
+  ) {
+    switch (category) {
+      case QuestionCategory.history:
+        return getRandomHistoryQuestion();
+      case QuestionCategory.science:
+        return getRandomScienceQuestion();
+      case QuestionCategory.math:
+        return getRandomMathQuestion();
+      case QuestionCategory.english:
+        return getRandomEnglishQuestion();
+      case QuestionCategory.spelling:
+        return getRandomSpellingQuestion();
+    }
   }
 }
 
@@ -1830,7 +1891,6 @@ class _CirclePatternState extends State<CirclePattern>
     _initializePlayerPositions();
   }
 
-  // New method to initialize player positions
   // New method to initialize player positions
   void _initializePlayerPositions() {
     // Clear existing positions
@@ -2850,11 +2910,16 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   right: index < 8 ? gap : 0,
                                 ),
-                                child: _buildBorderSquare(
-                                  topRowImages[index],
-                                  regularSquareSize,
-                                  false,
-                                  21 + index, // Positions 21-29
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                    0.2,
+                                  ), // Added 0.2 padding
+                                  child: _buildBorderSquare(
+                                    topRowImages[index],
+                                    regularSquareSize,
+                                    false,
+                                    21 + index, // Positions 21-29
+                                  ),
                                 ),
                               ),
                             ),
@@ -2894,11 +2959,16 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   bottom: index < 8 ? gap : 0,
                                 ),
-                                child: _buildBorderSquare(
-                                  leftColImages[index],
-                                  regularSquareSize,
-                                  false,
-                                  19 - index, // Positions 19-11 (in reverse)
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                    0.2,
+                                  ), // Added 0.2 padding
+                                  child: _buildBorderSquare(
+                                    leftColImages[index],
+                                    regularSquareSize,
+                                    false,
+                                    19 - index, // Positions 19-11 (in reverse)
+                                  ),
                                 ),
                               ),
                             ),
@@ -2980,11 +3050,16 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   bottom: index < 8 ? gap : 0,
                                 ),
-                                child: _buildBorderSquare(
-                                  rightColImages[index],
-                                  regularSquareSize,
-                                  false,
-                                  31 + index, // Positions 31-39
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                    0.2,
+                                  ), // Added 0.2 padding
+                                  child: _buildBorderSquare(
+                                    rightColImages[index],
+                                    regularSquareSize,
+                                    false,
+                                    31 + index, // Positions 31-39
+                                  ),
                                 ),
                               ),
                             ),
@@ -3025,11 +3100,16 @@ class _CirclePatternState extends State<CirclePattern>
                                 margin: EdgeInsets.only(
                                   right: index < 8 ? gap : 0,
                                 ),
-                                child: _buildBorderSquare(
-                                  bottomRowImages[index],
-                                  regularSquareSize,
-                                  false,
-                                  9 - index, // Positions 9-1 (in reverse)
+                                child: Padding(
+                                  padding: EdgeInsets.all(
+                                    0.2,
+                                  ), // Added 0.2 padding
+                                  child: _buildBorderSquare(
+                                    bottomRowImages[index],
+                                    regularSquareSize,
+                                    false,
+                                    9 - index, // Positions 9-1 (in reverse)
+                                  ),
                                 ),
                               ),
                             ),
@@ -3481,6 +3561,23 @@ class _EducationReviewPopupState extends State<EducationReviewPopup> {
   bool isCorrect = false;
   bool showFeedback = false;
 
+  String _getCategoryDisplayName(QuestionCategory category) {
+    switch (category) {
+      case QuestionCategory.history:
+        return 'History';
+      case QuestionCategory.science:
+        return 'Science';
+      case QuestionCategory.math:
+        return 'Math';
+      case QuestionCategory.english:
+        return 'English Questions';
+      case QuestionCategory.spelling:
+        return 'Spelling';
+      default:
+        return 'Education Review';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dialog(
@@ -3523,9 +3620,7 @@ class _EducationReviewPopupState extends State<EducationReviewPopup> {
                     ),
                     SizedBox(height: 8),
                     Text(
-                      widget.question.category == QuestionCategory.history
-                          ? 'History'
-                          : 'Science',
+                      _getCategoryDisplayName(widget.question.category),
                       style: TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
