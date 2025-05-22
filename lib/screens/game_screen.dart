@@ -85,6 +85,9 @@ class PlayerData {
   // Add question history tracking
   List<QuestionHistoryItem> questionHistory = [];
 
+  // Skip turn property
+  bool skipNextTurn = false;
+
   PlayerData({
     required this.name,
     required this.color,
@@ -343,6 +346,54 @@ Map<int, ChoreCard> choreCards = {
     targetType: "parents",
   ),
 };
+
+enum RewardType {
+  collectFromBank, // Collect money from the bank
+  collectFromParents, // Collect money from parents
+  giftCard, // Special gift card reward
+}
+
+// Reward card model
+class RewardCard {
+  final String title = "REWARDS";
+  final String instruction;
+  final String imagePath; // Image for the reward
+  final RewardType rewardType;
+  final int rewardAmount;
+  final String targetType;
+
+  RewardCard({
+    required this.instruction,
+    required this.imagePath,
+    required this.rewardType,
+    required this.rewardAmount,
+    required this.targetType,
+  });
+}
+
+// Create map of positions to reward cards
+Map<int, RewardCard> rewardCards = {
+  14: RewardCard(
+    instruction:
+        "You stayed with your exercise and diet routine plan. Earn \$25 Gift Card from Say it Now Self-Love Bank",
+    imagePath: "assets/rewards/reward_02.png",
+    rewardType: RewardType.giftCard,
+    rewardAmount: 25,
+    targetType: "Say it Now Self-Love Bank",
+  ),
+
+  24: RewardCard(
+    instruction:
+        "You got straight A's on your report card. You earn \$10 from each parent.",
+    imagePath: "assets/rewards/reward_03.png",
+    rewardType: RewardType.collectFromParents,
+    rewardAmount: 10,
+    targetType: "each parent",
+  ),
+};
+
+// ADD NEW REWARD SQUARES SET
+final Set<int> rewardSquarePositions = {14, 24};
 
 enum QuestionCategory { history, science, math, english, spelling }
 
@@ -1100,6 +1151,9 @@ final Set<int> educationQuestionPositions = {
   38,
 };
 
+final Set<int> penaltySquarePositions = {34}; // Remove 4 from here
+final Set<int> skipTurnSquarePositions = {4};
+
 // Welcome Screen that shows for 2 seconds
 class WelcomeScreen extends StatelessWidget {
   @override
@@ -1163,9 +1217,6 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 }
-
-// First, let's add a new Set to track the penalty square positions
-final Set<int> penaltySquarePositions = {4, 14, 24, 34};
 
 // Now, let's create a new PenaltyPopup widget for displaying the penalty message
 class PenaltyPopup extends StatefulWidget {
@@ -1833,6 +1884,7 @@ class CirclePattern extends StatefulWidget {
   _CirclePatternState createState() => _CirclePatternState();
 }
 
+// Complete _CirclePatternState class with turn management fixes
 class _CirclePatternState extends State<CirclePattern>
     with TickerProviderStateMixin {
   final Color darkNavyColor = const Color(0xFF0E1625);
@@ -1866,6 +1918,10 @@ class _CirclePatternState extends State<CirclePattern>
   // For smooth square scaling animations
   Map<int, AnimationController> squareAnimationControllers = {};
   Map<int, Animation<double>> squareScaleAnimations = {};
+
+  // NEW PROPERTIES FOR TURN MANAGEMENT
+  bool hasRolledThisTurn = false; // Track if current player has rolled
+  bool isTurnTransitioning = false; // Track if we're between turns
 
   @override
   void initState() {
@@ -1918,12 +1974,42 @@ class _CirclePatternState extends State<CirclePattern>
     super.dispose();
   }
 
-  // Updated dice roll method
+  // UPDATED: Modified dice roll method to include turn management
   void _rollDice() {
     // Don't allow rolling if animation is in progress
     if (isAnimatingMovement) return;
 
+    // Don't allow rolling if player has already rolled this turn
+    if (hasRolledThisTurn) return;
+
+    // Don't allow rolling if we're transitioning between turns
+    if (isTurnTransitioning) return;
+
+    // Get the current active player
+    PlayerData activePlayer = widget.players[activePlayerIndex];
+
+    // Check if this player should skip their turn
+    if (activePlayer.skipNextTurn) {
+      // Show skip turn message and move to next player
+      _showActionMessage("${activePlayer.name}'s turn is skipped!");
+      activePlayer.skipNextTurn = false; // Reset the flag
+
+      // Mark that we're transitioning turns
+      isTurnTransitioning = true;
+
+      // Automatically move to next player after a delay
+      Timer(Duration(seconds: 2), () {
+        if (mounted) {
+          _nextPlayerTurn();
+        }
+      });
+      return;
+    }
+
     setState(() {
+      // Mark that this player has rolled for this turn
+      hasRolledThisTurn = true;
+
       // Start the animation
       _animationController.forward();
 
@@ -1981,9 +2067,6 @@ class _CirclePatternState extends State<CirclePattern>
 
     // Calculate dice total
     int diceTotal = diceValues[0] + diceValues[1];
-
-    // Show action message about the roll
-    // _showActionMessage("${activePlayer.name} rolled ${diceTotal}!");
 
     // Store starting position for step counting
     int startPosition = activePlayer.position;
@@ -2103,13 +2186,35 @@ class _CirclePatternState extends State<CirclePattern>
     setState(() {});
   }
 
+  // UPDATED: Modified to handle landing actions and automatic turn progression
+  // REPLACE YOUR EXISTING _handleLandingAction METHOD WITH THIS:
+
   void _handleLandingAction(int position) {
     PlayerData activePlayer = widget.players[activePlayerIndex];
 
     print("${activePlayer.name} landed on square ${position}!");
 
+    // Check if the position has a reward card (NEW - FIRST PRIORITY)
+    if (rewardCards.containsKey(position)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return RewardGamePopup(
+            rewardCard: rewardCards[position]!,
+            onRewardComplete: (RewardCard card) {
+              _applyRewardBenefit(activePlayer, card);
+            },
+            onClose: () {
+              Navigator.of(context).pop();
+              _scheduleNextPlayerTurn(); // This will handle turn transition
+            },
+          );
+        },
+      );
+    }
     // Check if the position has a chore card
-    if (choreCards.containsKey(position)) {
+    else if (choreCards.containsKey(position)) {
       showDialog(
         context: context,
         barrierDismissible: false,
@@ -2121,6 +2226,7 @@ class _CirclePatternState extends State<CirclePattern>
             },
             onClose: () {
               Navigator.of(context).pop();
+              _scheduleNextPlayerTurn(); // This will handle turn transition
             },
           );
         },
@@ -2130,7 +2236,27 @@ class _CirclePatternState extends State<CirclePattern>
     else if (educationQuestionPositions.contains(position)) {
       _handleEducationQuestion(position);
     }
-    // Check if it's a penalty square
+    // Check if it's a skip turn square (position 4)
+    else if (skipTurnSquarePositions.contains(position)) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return SkipTurnPopup(
+            onPenaltyApplied: () {
+              // Set the flag to skip next turn
+              activePlayer.skipNextTurn = true;
+              setState(() {}); // Update UI to reflect the change
+            },
+            onClose: () {
+              Navigator.of(context).pop();
+              _scheduleNextPlayerTurn(); // This will handle turn transition
+            },
+          );
+        },
+      );
+    }
+    // Check if it's a penalty square (now only position 34)
     else if (penaltySquarePositions.contains(position)) {
       showDialog(
         context: context,
@@ -2144,6 +2270,7 @@ class _CirclePatternState extends State<CirclePattern>
             },
             onClose: () {
               Navigator.of(context).pop();
+              _scheduleNextPlayerTurn(); // This will handle turn transition
             },
           );
         },
@@ -2152,10 +2279,28 @@ class _CirclePatternState extends State<CirclePattern>
     // Special case for jail square
     else if (position == 20) {
       _movePlayerToPosition(activePlayer, 10);
+      _scheduleNextPlayerTurn(); // This will handle turn transition
+    }
+    // No special action - automatically move to next player
+    else {
+      _scheduleNextPlayerTurn(); // This will handle turn transition
     }
 
     // Update the UI
     setState(() {});
+  }
+
+  // UPDATED: Modified to include turn management flags
+  void _scheduleNextPlayerTurn() {
+    // Mark that we're transitioning between turns
+    isTurnTransitioning = true;
+
+    // Add a small delay before moving to next player for better UX
+    Timer(Duration(seconds: 2), () {
+      if (mounted) {
+        _nextPlayerTurn();
+      }
+    });
   }
 
   // Add this method to apply chore rewards
@@ -2199,6 +2344,34 @@ class _CirclePatternState extends State<CirclePattern>
         totalCollected = choreCard.rewardAmount * 2;
         break;
     }
+
+    // Update UI to reflect money changes
+    setState(() {});
+  }
+
+  // Method to apply reward benefits
+  void _applyRewardBenefit(PlayerData activePlayer, RewardCard rewardCard) {
+    int totalEarned = 0;
+
+    switch (rewardCard.rewardType) {
+      case RewardType.collectFromBank:
+      case RewardType.giftCard:
+        // Player earns money from the bank
+        activePlayer.addMoney(rewardCard.rewardAmount);
+        totalEarned = rewardCard.rewardAmount;
+        break;
+
+      case RewardType.collectFromParents:
+        // Simplified: Just add money as if from parents (assuming 2 parents)
+        activePlayer.addMoney(rewardCard.rewardAmount * 2);
+        totalEarned = rewardCard.rewardAmount * 2;
+        break;
+    }
+
+    // Show success message
+    _showActionMessage(
+      "${activePlayer.name} earned \$${totalEarned} from ${rewardCard.targetType}!",
+    );
 
     // Update UI to reflect money changes
     setState(() {});
@@ -2280,7 +2453,7 @@ class _CirclePatternState extends State<CirclePattern>
     boardPositions[newPosition]?.add(player);
   }
 
-  // Updated method to move to next player's turn
+  // UPDATED: Modified to reset turn flags
   void _nextPlayerTurn() {
     // Don't allow changing players if animation is in progress
     if (isAnimatingMovement) return;
@@ -2292,6 +2465,10 @@ class _CirclePatternState extends State<CirclePattern>
     // Move to next player
     setState(() {
       activePlayerIndex = (activePlayerIndex + 1) % widget.players.length;
+
+      // RESET TURN FLAGS for the new player
+      hasRolledThisTurn = false;
+      isTurnTransitioning = false;
     });
   }
 
@@ -2786,6 +2963,122 @@ class _CirclePatternState extends State<CirclePattern>
     );
   }
 
+  // UPDATED: Modified dice container to show turn status
+  Widget _buildDiceContainer(PlayerData activePlayer) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.8),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(color: Colors.white, width: 2),
+      ),
+      child: Column(
+        children: [
+          Text(
+            "${activePlayer.name}'s Turn",
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: activePlayer.color,
+            ),
+          ),
+          SizedBox(height: 10),
+
+          // Show skip message if player's turn should be skipped
+          if (activePlayer.skipNextTurn)
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.orange.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.orange, width: 2),
+              ),
+              child: Text(
+                "TURN SKIPPED",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.orange.shade800,
+                ),
+              ),
+            )
+          // Show turn completed message if player has already rolled
+          else if (hasRolledThisTurn || isTurnTransitioning)
+            Container(
+              padding: EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.green.withOpacity(0.3),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green, width: 2),
+              ),
+              child: Text(
+                isTurnTransitioning ? "TURN COMPLETED" : "DICE ROLLED",
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green.shade800,
+                ),
+              ),
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // First die
+                AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _animationController.value * 4 * pi,
+                      child: _buildDice(diceValues[0], true),
+                    );
+                  },
+                ),
+                SizedBox(width: 20),
+                // Second die
+                AnimatedBuilder(
+                  animation: _animationController,
+                  builder: (context, child) {
+                    return Transform.rotate(
+                      angle: _animationController.value * 4 * pi,
+                      child: _buildDice(diceValues[1], true),
+                    );
+                  },
+                ),
+              ],
+            ),
+
+          SizedBox(height: 10),
+          // Updated tap hint
+          Text(
+            _getTurnStatusMessage(),
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.black54,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // NEW: Helper method to get appropriate status message
+  String _getTurnStatusMessage() {
+    if (isAnimatingMovement) {
+      return "Animation in progress...";
+    } else if (widget.players[activePlayerIndex].skipNextTurn) {
+      return "Turn will be skipped...";
+    } else if (isTurnTransitioning) {
+      return "Moving to next player...";
+    } else if (hasRolledThisTurn) {
+      return "Dice already rolled this turn";
+    } else {
+      return "Tap dice to roll";
+    }
+  }
+
   // Helper method to create inner square boxes with images
   Widget _buildInnerSquare({required String imagePath}) {
     return Container(
@@ -2800,6 +3093,123 @@ class _CirclePatternState extends State<CirclePattern>
         child: Image.asset(imagePath, fit: BoxFit.contain),
       ),
     );
+  }
+
+  // UPDATED: Education question handler with proper turn management
+  void _handleEducationQuestion(int position) {
+    if (educationQuestionPositions.contains(position)) {
+      // Get the current active player
+      PlayerData activePlayer = widget.players[activePlayerIndex];
+
+      // Get a random question
+      EducationQuestion question = EducationQuestionBank.getRandomQuestion();
+
+      // Show the education review popup
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return EducationReviewPopup(
+            question: question,
+            onAnswerSubmitted: (bool isCorrect, int selectedIndex) {
+              // Update player's money and position based on answer
+              if (isCorrect) {
+                // CORRECT ANSWER: Get $5 and move forward 1 step
+                activePlayer.addMoney(5);
+                _movePlayerSteps(activePlayer, 1); // Move forward 1 step
+                _showActionMessage(
+                  "${activePlayer.name} answered correctly! +\$5 and moved forward 1 step!",
+                );
+              } else {
+                // INCORRECT ANSWER: Pay $2 to each other player and move back 2 steps
+                int totalPaid = 0;
+                for (var player in widget.players) {
+                  if (player != activePlayer) {
+                    if (activePlayer.subtractMoney(2)) {
+                      player.addMoney(2);
+                      totalPaid += 2;
+                    }
+                  }
+                }
+                _movePlayerSteps(activePlayer, -2); // Move backward 2 steps
+                _showActionMessage(
+                  "${activePlayer.name} answered incorrectly! Paid \$$totalPaid to other players and moved back 2 steps!",
+                );
+              }
+
+              // Track this question in player's history
+              activePlayer.addQuestionToHistory(
+                question,
+                selectedIndex,
+                isCorrect,
+              );
+
+              // Update the UI
+              setState(() {});
+            },
+            onClose: () {
+              Navigator.of(context).pop();
+              // Automatically move to next player after education popup closes
+              _scheduleNextPlayerTurn(); // This ensures proper turn transition
+            },
+          );
+        },
+      );
+    }
+  }
+
+  // Helper method to move player by a specific number of steps (can be negative)
+  void _movePlayerSteps(PlayerData player, int steps) {
+    // Remove player from current position
+    if (boardPositions.containsKey(player.position)) {
+      boardPositions[player.position]?.remove(player);
+      if (boardPositions[player.position]?.isEmpty ?? true) {
+        boardPositions.remove(player.position);
+      }
+    }
+
+    // Calculate new position (handle negative steps and wrap around)
+    int newPosition = (player.position + steps) % totalBoardSquares;
+
+    // Handle negative positions (wrap around to end of board)
+    if (newPosition < 0) {
+      newPosition = totalBoardSquares + newPosition;
+    }
+
+    // Update player position
+    player.position = newPosition;
+
+    // Add player to new position
+    if (!boardPositions.containsKey(newPosition)) {
+      boardPositions[newPosition] = [];
+    }
+    boardPositions[newPosition]?.add(player);
+
+    // Check for lap completion if moving forward past position 0
+    if (steps > 0 && player.position < steps) {
+      player.lapsCompleted++;
+      _showActionMessage(
+        "${player.name} completed lap ${player.lapsCompleted}!",
+      );
+
+      // Show question summary after completing lap 2
+      if (player.lapsCompleted == 2) {
+        Future.delayed(Duration(milliseconds: 1500), () {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return QuestionSummaryPopup(
+                player: player,
+                onClose: () {
+                  Navigator.of(context).pop();
+                },
+              );
+            },
+          );
+        });
+      }
+    }
   }
 
   @override
@@ -3129,13 +3539,13 @@ class _CirclePatternState extends State<CirclePattern>
                   ),
                 ),
 
-                // ADD THIS: Player tokens overlay
+                // Player tokens overlay
                 _buildPlayerTokens(),
               ],
             ),
           ),
 
-          // ADD THIS: Action message
+          // Action message
           _buildActionMessage(),
 
           SizedBox(height: 8),
@@ -3145,104 +3555,8 @@ class _CirclePatternState extends State<CirclePattern>
 
           SizedBox(height: 10),
 
-          // Game controls - dice and next player button
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Dice container
-              Expanded(
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 10),
-                  padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.8),
-                    borderRadius: BorderRadius.circular(15),
-                    border: Border.all(color: Colors.white, width: 2),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        "${activePlayer.name}'s Turn",
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          color: activePlayer.color,
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Animated dice display - now clickable
-                          AnimatedBuilder(
-                            animation: _animationController,
-                            builder: (context, child) {
-                              return Transform.rotate(
-                                angle: _animationController.value * 4 * pi,
-                                child: _buildDice(diceValues[0], true),
-                              );
-                            },
-                          ),
-                          SizedBox(width: 20),
-                          AnimatedBuilder(
-                            animation: _animationController,
-                            builder: (context, child) {
-                              return Transform.rotate(
-                                angle: _animationController.value * 4 * pi,
-                                child: _buildDice(diceValues[1], true),
-                              );
-                            },
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      // Tap hint
-                      Text(
-                        isAnimatingMovement
-                            ? "Animation in progress..."
-                            : "Tap dice to roll",
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.black54,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Next player button
-              Container(
-                margin: EdgeInsets.only(right: 10),
-                child: ElevatedButton(
-                  onPressed:
-                      isAnimatingMovement ? null : () => _nextPlayerTurn(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor:
-                        isAnimatingMovement ? Colors.grey : Colors.green,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Icon(Icons.arrow_forward, color: Colors.white),
-                      SizedBox(height: 5),
-                      Text(
-                        "Next",
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
+          // Game controls - dice container with updated turn management
+          _buildDiceContainer(activePlayer),
         ],
       ),
     );
@@ -3673,8 +3987,8 @@ class _EducationReviewPopupState extends State<EducationReviewPopup> {
                   ),
                   child: Text(
                     isCorrect
-                        ? 'Correct! You earned \$10.'
-                        : 'Incorrect. You lost \$10. The correct answer was: ${widget.question.options[widget.question.correctAnswerIndex]}',
+                        ? 'Correct! You earned \$5 and move forward 1 step!'
+                        : 'Incorrect. You pay \$2 to each player and move back 2 steps. The correct answer was: ${widget.question.options[widget.question.correctAnswerIndex]}',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
@@ -3866,6 +4180,7 @@ class _EducationReviewPopupState extends State<EducationReviewPopup> {
 }
 
 // Extension to handle education review in the main game
+// Extension to handle education review in the main game
 extension EducationReviewHandler on _CirclePatternState {
   // Method to handle education question when landing on specific squares
   void _handleEducationQuestion(int position) {
@@ -3884,17 +4199,35 @@ extension EducationReviewHandler on _CirclePatternState {
           return EducationReviewPopup(
             question: question,
             onAnswerSubmitted: (bool isCorrect, int selectedIndex) {
-              // Update player's money based on answer
+              // Update player's money and position based on answer
               if (isCorrect) {
-                activePlayer.addMoney(10); // Add $10 for correct answer
+                // CORRECT ANSWER: Get $5 and move forward 1 step
+                activePlayer.addMoney(5);
+                _movePlayerSteps(activePlayer, 1); // Move forward 1 step
+                _showActionMessage(
+                  "${activePlayer.name} answered correctly! +\$5 and moved forward 1 step!",
+                );
               } else {
-                activePlayer.subtractMoney(10); // Subtract $10 for wrong answer
+                // INCORRECT ANSWER: Pay $2 to each other player and move back 2 steps
+                int totalPaid = 0;
+                for (var player in widget.players) {
+                  if (player != activePlayer) {
+                    if (activePlayer.subtractMoney(2)) {
+                      player.addMoney(2);
+                      totalPaid += 2;
+                    }
+                  }
+                }
+                _movePlayerSteps(activePlayer, -2); // Move backward 2 steps
+                _showActionMessage(
+                  "${activePlayer.name} answered incorrectly! Paid \$$totalPaid to other players and moved back 2 steps!",
+                );
               }
 
               // Track this question in player's history
               activePlayer.addQuestionToHistory(
                 question,
-                selectedIndex, // Now using the parameter passed from the popup
+                selectedIndex,
                 isCorrect,
               );
 
@@ -3902,11 +4235,67 @@ extension EducationReviewHandler on _CirclePatternState {
               setState(() {});
             },
             onClose: () {
-              Navigator.of(context).pop(); // Close the dialog
+              Navigator.of(context).pop();
+              // Automatically move to next player after education popup closes
+              _scheduleNextPlayerTurn();
             },
           );
         },
       );
+    }
+  }
+
+  // Helper method to move player by a specific number of steps (can be negative)
+  void _movePlayerSteps(PlayerData player, int steps) {
+    // Remove player from current position
+    if (boardPositions.containsKey(player.position)) {
+      boardPositions[player.position]?.remove(player);
+      if (boardPositions[player.position]?.isEmpty ?? true) {
+        boardPositions.remove(player.position);
+      }
+    }
+
+    // Calculate new position (handle negative steps and wrap around)
+    int newPosition = (player.position + steps) % totalBoardSquares;
+
+    // Handle negative positions (wrap around to end of board)
+    if (newPosition < 0) {
+      newPosition = totalBoardSquares + newPosition;
+    }
+
+    // Update player position
+    player.position = newPosition;
+
+    // Add player to new position
+    if (!boardPositions.containsKey(newPosition)) {
+      boardPositions[newPosition] = [];
+    }
+    boardPositions[newPosition]?.add(player);
+
+    // Check for lap completion if moving forward past position 0
+    if (steps > 0 && player.position < steps) {
+      player.lapsCompleted++;
+      _showActionMessage(
+        "${player.name} completed lap ${player.lapsCompleted}!",
+      );
+
+      // Show question summary after completing lap 2
+      if (player.lapsCompleted == 2) {
+        Future.delayed(Duration(milliseconds: 1500), () {
+          showDialog(
+            context: context,
+            barrierDismissible: false,
+            builder: (BuildContext context) {
+              return QuestionSummaryPopup(
+                player: player,
+                onClose: () {
+                  Navigator.of(context).pop();
+                },
+              );
+            },
+          );
+        });
+      }
     }
   }
 }
@@ -4201,6 +4590,342 @@ class QuestionSummaryPopup extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class SkipTurnPopup extends StatefulWidget {
+  final VoidCallback onClose;
+  final Function() onPenaltyApplied;
+
+  const SkipTurnPopup({
+    Key? key,
+    required this.onClose,
+    required this.onPenaltyApplied,
+  }) : super(key: key);
+
+  @override
+  _SkipTurnPopupState createState() => _SkipTurnPopupState();
+}
+
+// ADD THIS WIDGET AFTER SkipTurnPopup
+
+class RewardGamePopup extends StatefulWidget {
+  final RewardCard rewardCard;
+  final Function(RewardCard) onRewardComplete;
+  final VoidCallback onClose;
+
+  const RewardGamePopup({
+    Key? key,
+    required this.rewardCard,
+    required this.onRewardComplete,
+    required this.onClose,
+  }) : super(key: key);
+
+  @override
+  _RewardGamePopupState createState() => _RewardGamePopupState();
+}
+
+class _RewardGamePopupState extends State<RewardGamePopup>
+    with SingleTickerProviderStateMixin {
+  double opacity1 = 0.0;
+  double opacity2 = 0.0;
+  bool showRewardDetails = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Show the first image (reward icon)
+    Future.delayed(Duration(milliseconds: 500), () {
+      setState(() {
+        opacity1 = 1.0;
+      });
+    });
+
+    // Show the second image (full reward card with instruction) after a delay
+    Future.delayed(Duration(seconds: 2), () {
+      setState(() {
+        opacity1 = 0.0; // Fade out first image
+        showRewardDetails = true; // Switch to showing reward details
+      });
+
+      // After transition, fade in reward details
+      Future.delayed(Duration(milliseconds: 300), () {
+        setState(() {
+          opacity2 = 1.0;
+        });
+      });
+
+      // Auto apply reward effect after showing the details
+      Future.delayed(Duration(seconds: 3), () {
+        widget.onRewardComplete(widget.rewardCard);
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        width: double.infinity,
+        height: MediaQuery.of(context).size.height * 0.5,
+        decoration: BoxDecoration(
+          color: Color(0xFFFFD700), // Gold background for rewards
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.black, width: 3),
+        ),
+        child: Stack(
+          children: [
+            // First animation: Reward icon
+            if (!showRewardDetails)
+              AnimatedOpacity(
+                opacity: opacity1,
+                duration: Duration(milliseconds: 500),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Title
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 40.0),
+                        child: Text(
+                          "REWARDS",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            letterSpacing: 2,
+                          ),
+                        ),
+                      ),
+
+                      // Reward image
+                      Container(
+                        width: 150,
+                        height: 150,
+                        child: Image.asset(
+                          widget.rewardCard.imagePath,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+            // Second animation: Reward card with instruction
+            if (showRewardDetails)
+              AnimatedOpacity(
+                opacity: opacity2,
+                duration: Duration(milliseconds: 500),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // Title
+                        Text(
+                          "REWARDS",
+                          style: TextStyle(
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            letterSpacing: 2,
+                          ),
+                        ),
+
+                        SizedBox(height: 40),
+
+                        // Instruction
+                        Text(
+                          widget.rewardCard.instruction,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
+                        ),
+
+                        SizedBox(height: 30),
+
+                        // Reward Image
+                        Container(
+                          width: 120,
+                          height: 120,
+                          child: Image.asset(
+                            widget.rewardCard.imagePath,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+
+            // Footer
+            Positioned(
+              bottom: 15,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Text(
+                  "SAY IT NOW SELF-LOVE KIDS LLC GAME",
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+            ),
+
+            // Close button
+            Positioned(
+              top: 10,
+              right: 10,
+              child: IconButton(
+                icon: Icon(Icons.close, color: Colors.black, size: 30),
+                onPressed: widget.onClose,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _SkipTurnPopupState extends State<SkipTurnPopup>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 800),
+    );
+
+    _scaleAnimation = Tween<double>(begin: 0.7, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.elasticOut),
+    );
+
+    _animationController.forward();
+
+    // Apply the penalty automatically after a short delay
+    Future.delayed(Duration(seconds: 2), () {
+      widget.onPenaltyApplied();
+    });
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: AnimatedBuilder(
+        animation: _animationController,
+        builder: (context, child) {
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
+        },
+        child: Container(
+          width: double.infinity,
+          height: MediaQuery.of(context).size.height * 0.4,
+          decoration: BoxDecoration(
+            color: Color(0xFFFF4500), // Orange red color
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.black, width: 3),
+            boxShadow: [
+              BoxShadow(color: Colors.black45, blurRadius: 10, spreadRadius: 2),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Main content
+              Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Stop icon
+                      Icon(Icons.stop_circle, size: 80, color: Colors.white),
+
+                      SizedBox(height: 20),
+
+                      // Title
+                      Text(
+                        "FREEZE!",
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 2,
+                        ),
+                      ),
+
+                      SizedBox(height: 20),
+
+                      // Message
+                      Text(
+                        "You landed on the freeze square!\nYou must skip your next turn!",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              // Footer
+              Positioned(
+                bottom: 15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: Text(
+                    "SAY IT NOW SELF-LOVE KIDS LLC GAME",
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white70,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Close button
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.close, color: Colors.white, size: 30),
+                  onPressed: widget.onClose,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
